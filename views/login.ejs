@@ -1,0 +1,11 @@
+<%- include('partials/auth-top') %>
+<form method="post" action="/logg-inn">
+  <%- include('partials/csrf') %>
+  <label for="email">E-post</label>
+  <input id="email" name="email" type="email" required value="<%= email %>" autocomplete="username" autofocus>
+  <label for="password">Passord</label>
+  <input id="password" name="password" type="password" required autocomplete="current-password">
+  <button type="submit">Logg inn</button>
+</form>
+<p class="small center"><a href="/glemt-passord">Glemt passord?</a></p>
+<%- include('partials/auth-bottom') %>

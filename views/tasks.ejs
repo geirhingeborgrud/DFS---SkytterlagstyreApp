@@ -1,0 +1,62 @@
+<%- include('partials/header') %>
+<div class="page-head"><h1>Oppgaver</h1></div>
+<form class="card actions" method="get" action="/oppgaver">
+  <select name="ar" data-autosubmit><option value="">Alle år</option><% years.forEach(y => { %><option value="<%= y %>" <%= y === year ? 'selected' : '' %>><%= y %></option><% }) %></select>
+  <label class="inline"><input type="checkbox" name="mine" value="1" <%= mine ? 'checked' : '' %> data-autosubmit> Bare mine</label>
+  <label class="inline"><input type="checkbox" name="ferdige" value="1" <%= showDone ? 'checked' : '' %> data-autosubmit> Vis ferdige</label>
+  <noscript><button>Filtrer</button></noscript>
+</form>
+<div class="card">
+  <% if (!tasks.length) { %><p class="empty">Ingen oppgaver.</p><% } %>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Frist</th><th>Oppgave</th><th>Ansvarlig</th><th>Status</th></tr></thead>
+    <% tasks.forEach(t => { %>
+    <tr>
+      <td class="nowrap"><span class="badge <%= t.status !== 'ferdig' && t.due_date && t.due_date < now ? 'red' : '' %>"><%= t.due_date ? fmtDate(t.due_date) : '–' %></span></td>
+      <td>
+        <% if (canWrite) { %>
+        <details><summary class="<%= t.status === 'ferdig' ? 'done' : '' %>"><%= t.title %></summary>
+          <form method="post" action="/oppgaver/<%= t.id %>">
+            <%- include('partials/csrf') %>
+            <label>Tittel</label><input name="title" type="text" value="<%= t.title %>">
+            <label>Beskrivelse</label><textarea name="description"><%= t.description || '' %></textarea>
+            <div class="row">
+              <div><label>Frist</label><input name="due_date" type="date" value="<%= t.due_date || '' %>"></div>
+              <div><label>Ansvarlig</label><select name="assignee_id"><option value="">–</option><% users.forEach(u => { %><option value="<%= u.id %>" <%= u.id === t.assignee_id ? 'selected' : '' %>><%= u.name %></option><% }) %></select></div>
+              <div><label>Status</label><select name="status"><% Object.entries(TASK_STATUS).forEach(([k, v]) => { %><option value="<%= k %>" <%= t.status === k ? 'selected' : '' %>><%= v %></option><% }) %></select></div>
+            </div>
+            <div class="form-actions"><button class="small">Lagre</button></div>
+          </form>
+          <form method="post" action="/oppgaver/<%= t.id %>/slett" data-confirm="Slette oppgaven?"><%- include('partials/csrf') %><button class="link small danger">Slett</button></form>
+        </details>
+        <% } else { %><span class="<%= t.status === 'ferdig' ? 'done' : '' %>"><%= t.title %></span><% } %>
+        <% if (t.description) { %><div class="small muted pre"><%= t.description %></div><% } %>
+        <% if (t.meeting_title) { %><div class="small muted">Fra møte: <%= t.meeting_title %></div><% } %>
+      </td>
+      <td class="small"><%= t.assignee_name || '–' %></td>
+      <td>
+        <% if (canWrite || t.assignee_id === currentUser.id) { %>
+        <form method="post" action="/oppgaver/<%= t.id %>/status"><%- include('partials/csrf') %>
+          <select name="status" data-autosubmit><% Object.entries(TASK_STATUS).forEach(([k, v]) => { %><option value="<%= k %>" <%= t.status === k ? 'selected' : '' %>><%= v %></option><% }) %></select>
+          <noscript><button class="small">OK</button></noscript>
+        </form>
+        <% } else { %><%= TASK_STATUS[t.status] %><% } %>
+      </td>
+    </tr>
+    <% }) %>
+  </table></div>
+</div>
+<% if (canWrite) { %>
+<form class="card" method="post" action="/oppgaver">
+  <%- include('partials/csrf') %>
+  <h2>Ny oppgave</h2>
+  <div class="row">
+    <div><label>Tittel</label><input name="title" type="text" required></div>
+    <div><label>Frist</label><input name="due_date" type="date"></div>
+    <div><label>Ansvarlig</label><select name="assignee_id"><option value="">–</option><% users.forEach(u => { %><option value="<%= u.id %>"><%= u.name %></option><% }) %></select></div>
+  </div>
+  <label>Beskrivelse</label><textarea name="description"></textarea>
+  <div class="form-actions"><button>Legg til</button></div>
+</form>
+<% } %>
+<%- include('partials/footer') %>

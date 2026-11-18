@@ -1,0 +1,7 @@
+<% if (currentUser) { %><%- include('partials/header') %><% } else { %><%- include('partials/auth-top') %><% } %>
+<div class="card">
+  <h1><%= title %></h1>
+  <p><%= message %></p>
+  <p><a href="/">Til forsiden</a></p>
+</div>
+<% if (currentUser) { %><%- include('partials/footer') %><% } else { %><%- include('partials/auth-bottom') %><% } %>

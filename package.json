@@ -1,0 +1,23 @@
+{
+  "name": "skytterlag-styreapp",
+  "version": "0.1.0",
+  "description": "Styreverktøy for skytterlag i Det frivillige Skyttervesen (DFS): årshjul, styremøter, dokumentarkiv med tilgangsnivåer og e-post til styret.",
+  "main": "src/server.js",
+  "private": true,
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch src/server.js",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js"
+  },
+  "dependencies": {
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0",
+    "multer": "^2.5.0",
+    "nodemailer": "^10.6.0"
+  }
+}

@@ -1,0 +1,24 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/medlemmer">Medlemmer</a></div>
+<h1>Importer medlemmer fra MittDFS</h1>
+<div class="grid grid-2">
+  <form class="card" method="post" action="/medlemmer/import" enctype="multipart/form-data">
+    <%- include('../partials/csrf') %>
+    <label for="file">Medlemsliste (CSV)</label>
+    <input id="file" name="file" type="file" accept=".csv,text/csv" required>
+    <label class="inline"><input type="checkbox" name="deactivate" value="1"> Sett medlemmer som ikke finnes i filen som inaktive</label>
+    <p class="small muted">Medlemmer med verv eller brukerkonto blir aldri deaktivert automatisk.</p>
+    <div class="form-actions"><button>Importer</button></div>
+  </form>
+  <div class="card">
+    <h2>Slik gjør du</h2>
+    <ol>
+      <li>Logg inn på <a href="https://www.mittdfs.no" target="_blank" rel="noopener">mittdfs.no</a> som lagsadministrator.</li>
+      <li>Gå til medlemsoversikten for laget og eksporter listen til Excel/CSV.</li>
+      <li>Hvis du får en Excel-fil: åpne den og velg <em>Lagre som → CSV (semikolondelt)</em>.</li>
+      <li>Last opp filen her.</li>
+    </ol>
+    <p class="small muted">Appen kjenner igjen kolonner som <em>Skytter-ID / Skytternr, Fornavn, Etternavn, Navn, Fødselsdato, E-post, Mobil, Adresse, Postnr, Poststed, Klasse</em>. Eksisterende medlemmer oppdateres (matcher på skytter-ID, ellers navn + fødselsdato). Det finnes ingen åpen API-tilgang til MittDFS, derfor brukes fileksport.</p>
+  </div>
+</div>
+<%- include('../partials/footer') %>

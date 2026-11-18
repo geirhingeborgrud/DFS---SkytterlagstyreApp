@@ -1,0 +1,22 @@
+<%- include('../partials/head') %>
+<body>
+<div class="print-page">
+  <p class="no-print"><a href="<%= base %>/<%= meeting.id %>">← Tilbake</a> · <a href="#" data-print>Skriv ut / lagre som PDF</a></p>
+  <h1>Protokoll – <%= meeting.title %></h1>
+  <p><strong><%= clubName %></strong><br>
+  Tid: <%= fmtLocal(meeting.starts_at) %><br>
+  Sted: <%= [meeting.location, meeting.meet_url ? 'Google Meet' : null].filter(Boolean).join(' / ') || '–' %></p>
+  <% if (attendees.length) { %><p>Innkalt: <%= attendees.map(a => a.name).join(', ') %></p><% } %>
+  <% if (meeting.notes) { %><p class="pre"><%= meeting.notes %></p><% } %>
+  <% items.forEach(it => { %>
+    <h3>Sak <%= caseNo(it) %> <%= it.title %></h3>
+    <% if (it.description) { %><p class="pre"><%= it.description %></p><% } %>
+    <p class="pre"><strong>Vedtak:</strong> <%= it.decision || '' %></p>
+  <% }) %>
+  <% if (tasks.length) { %>
+  <h3>Oppfølging</h3>
+  <ul><% tasks.forEach(t => { %><li><%= t.title %><%= t.assignee_name ? ' – ' + t.assignee_name : '' %><%= t.due_date ? ' (frist ' + fmtDate(t.due_date) + ')' : '' %></li><% }) %></ul>
+  <% } %>
+  <p class="sign">Referent: ______________________</p>
+</div>
+</body></html>

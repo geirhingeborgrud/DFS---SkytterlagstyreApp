@@ -1,0 +1,12 @@
+<% if (!list.length) { %><p class="empty">Ingen registrert.</p><% } else { %>
+<div class="table-wrap"><table>
+  <thead><tr><th><%= kindLabel %></th><th>Kaliber</th><th>Serienr.</th><th>Våpenkort</th><th>Oppbevaring</th><th>Status</th></tr></thead>
+  <% list.forEach(w => { %>
+    <tr><td><a href="/vapen/<%= w.id %>"><%= weaponLabel(w) || '(uten navn)' %></a></td><td class="small"><%= w.caliber || '' %></td>
+      <td class="small"><%= w.serial_number || '' %></td>
+      <td class="small"><%= w.card_number || '' %> <% if (w.card_document_id) { %><span class="badge ok" title="Våpenkort lastet opp">📄</span><% } else { %><span class="badge warn">mangler kopi</span><% } %></td>
+      <td class="small"><%= w.storage || '' %></td>
+      <td><span class="badge <%= w.status === 'utlant' ? 'warn' : w.status === 'avhendet' ? '' : 'ok' %>"><%= WEAPON_STATUS[w.status] %></span><% if (w.loaned_to) { %><div class="small"><%= w.loaned_to %></div><% } %></td></tr>
+  <% }) %>
+</table></div>
+<% } %>

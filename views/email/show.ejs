@@ -1,0 +1,10 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/epost">E-post</a></div>
+<h1><%= email.subject %></h1>
+<div class="card">
+  <p class="small muted">Sendt <%= fmtDateTime(email.sent_at) %> av <%= email.sender_name %> · Status: <span class="badge <%= email.status === 'sendt' ? 'ok' : email.status === 'feilet' ? 'red' : 'warn' %>"><%= email.status %></span><%= email.error ? ' – ' + email.error : '' %></p>
+  <p class="small"><strong>Til:</strong> <%= email.recipients.map(r => r.name ? r.name + ' <' + r.email + '>' : r.email).join(', ') %></p>
+  <% if (docs.length) { %><p class="small"><strong><%= email.mode === 'lenke' ? 'Lenker' : 'Vedlegg' %>:</strong> <% docs.forEach(d => { %><% if (d.readable) { %><a href="/dokumenter/<%= d.id %>"><%= d.title %></a><% } else { %><%= d.title %><% } %> <% }) %></p><% } %>
+  <div class="letter"><%= email.body %></div>
+</div>
+<%- include('../partials/footer') %>

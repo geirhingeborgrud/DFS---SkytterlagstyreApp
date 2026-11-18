@@ -1,0 +1,13 @@
+<%- include('../partials/header') %>
+<h1>Stillingsinstrukser</h1>
+<p class="muted">Instrukser, rutiner og sjekklister for hvert verv i laget. Gir god overlevering når nye tar over.</p>
+<div class="grid grid-3">
+<% roles.forEach(r => { %>
+  <a class="card" href="/stillinger/<%= r.key %>">
+    <h2><%= r.label %></h2>
+    <div class="small"><%= r.holders.length ? r.holders.join(', ') : 'Ingen registrert' %></div>
+    <div class="small muted"><%= r.docs %> dokument(er) · <%= r.checklist.total ? (r.checklist.done || 0) + '/' + r.checklist.total + ' punkter utført' : 'ingen sjekkliste' %></div>
+  </a>
+<% }) %>
+</div>
+<%- include('../partials/footer') %>

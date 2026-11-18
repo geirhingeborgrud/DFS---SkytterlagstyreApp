@@ -1,0 +1,18 @@
+<%- include('../partials/header') %>
+<div class="page-head"><h1>Utlånserklæringer</h1>
+  <% if (canEdit) { %><div class="actions"><a class="btn secondary" href="/vapen/utlan/mal">Rediger mal</a><a class="btn" href="/vapen/utlan/ny">Ny utlånserklæring</a></div><% } %></div>
+<%- include('tabs') %>
+<div class="card">
+  <% if (!loans.length) { %><p class="empty">Ingen utlån registrert.</p><% } %>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Skytter</th><th>Våpen</th><th>Periode</th><th>Sendt</th><th>Status</th></tr></thead>
+    <% loans.forEach(l => { %>
+      <tr><td><a href="/vapen/utlan/<%= l.id %>"><%= l.first_name %> <%= l.last_name %></a><div class="small muted"><%= l.shooter_id || '' %></div></td>
+        <td class="small"><%= weaponLabel(l) %><br><%= l.serial_number || '' %></td>
+        <td class="small nowrap"><%= fmtDate(l.from_date) %> – <%= l.to_date ? fmtDate(l.to_date) : '' %></td>
+        <td class="small"><%= l.emailed_at ? fmtDate(l.emailed_at) : '–' %></td>
+        <td><span class="badge <%= l.status === 'aktiv' ? 'warn' : 'ok' %>"><%= l.status === 'aktiv' ? 'Utlånt' : 'Returnert' %></span></td></tr>
+    <% }) %>
+  </table></div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,48 @@
+<%- include('partials/header') %>
+<h1>Administrasjon</h1>
+<div class="grid grid-2">
+  <div>
+    <form class="card" method="post" action="/admin/innstillinger"><%- include('partials/csrf') %>
+      <h2>Skytterlaget</h2>
+      <label>Navn</label><input name="club" type="text" value="<%= clubName %>" required>
+      <div class="form-actions"><button>Lagre</button></div>
+    </form>
+    <form class="card" method="post" action="/admin/logo" enctype="multipart/form-data"><%- include('partials/csrf') %>
+      <h2>Logo</h2>
+      <% if (hasLogo) { %><p><img src="/logo?v=<%= logoVersion %>" alt="Logo" class="admin-logo"></p><% } %>
+      <input name="logo" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+      <p class="small muted">Vises på innloggingssiden, i menyen og på forsiden. PNG med gjennomsiktig bakgrunn ser best ut.</p>
+      <div class="form-actions"><button>Last opp logo</button><% if (hasLogo) { %><button class="secondary" name="remove" value="1" formnovalidate>Fjern logo</button><% } %></div>
+    </form>
+    <div class="card"><h2>E-post (SMTP)</h2>
+      <% if (smtp) { %><p><span class="badge ok">Konfigurert</span> Avsender: <%= mailFrom %></p>
+      <% } else { %><p><span class="badge warn">Ikke konfigurert</span> E-post blir bare simulert. Sett <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code> og <code>MAIL_FROM</code> i <code>.env</code> og start appen på nytt. For Google Workspace/Gmail: <code>smtp.gmail.com</code>, port 465, <code>SMTP_SECURE=true</code> og et app-passord.</p><% } %>
+    </div>
+  </div>
+  <div class="card" id="mapper">
+    <h2>Mapper</h2>
+    <p class="small muted">Systemmapper (merket 🔒) brukes av appen og kan gis nytt navn, men ikke slettes. Møtemapper og årsmapper opprettes automatisk.</p>
+    <% folders.forEach(f => { %>
+      <form method="post" action="/admin/mapper/<%= f.id %>" class="actions"><%- include('partials/csrf') %>
+        <span class="small"><%= f.parent_name ? '↳ ' : '' %><%= f.key ? '🔒' : '' %></span>
+        <input name="name" type="text" value="<%= f.name %>" aria-label="Navn">
+        <input name="sort" type="number" value="<%= f.sort %>" aria-label="Rekkefølge" class="sort-input">
+        <span class="small muted"><%= f.docs %> dok.</span>
+        <button class="small secondary">Lagre</button>
+      </form>
+      <% if (!f.key) { %><form method="post" action="/admin/mapper/<%= f.id %>/slett" data-confirm="Slette mappen? Dokumentene beholdes uten mappe."><%- include('partials/csrf') %><button class="link small danger">Slett «<%= f.name %>»</button></form><% } %>
+    <% }) %>
+    <form method="post" action="/admin/mapper" class="actions"><%- include('partials/csrf') %>
+      <h3>Ny mappe</h3>
+      <input name="name" type="text" placeholder="Navn" required>
+      <select name="parent_id"><option value="">(øverste nivå)</option><% folders.filter(f => !f.parent_id).forEach(f => { %><option value="<%= f.id %>">under <%= f.name %></option><% }) %></select>
+      <button class="small">Opprett</button>
+    </form>
+  </div>
+</div>
+<div class="card"><h2>Aktivitetslogg</h2>
+  <div class="table-wrap"><table>
+    <% log.forEach(l => { %><tr><td class="small nowrap"><%= fmtDateTime(l.created_at) %></td><td class="small"><%= l.user_name || '–' %></td><td class="small"><%= l.action %></td><td class="small muted"><%= l.details || '' %></td></tr><% }) %>
+  </table></div>
+</div>
+<%- include('partials/footer') %>

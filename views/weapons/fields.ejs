@@ -1,0 +1,18 @@
+<input type="hidden" name="kind" value="<%= weapon.kind %>">
+<div class="row">
+  <% if (weapon.kind === 'del') { %><div><label>Type del</label><select name="part_type"><% PART_TYPES.forEach(p => { %><option <%= weapon.part_type === p ? 'selected' : '' %>><%= p %></option><% }) %></select></div><% } %>
+  <div><label>Fabrikat</label><input name="manufacturer" type="text" value="<%= weapon.manufacturer || '' %>" placeholder="f.eks. Sauer, Kongsberg"></div>
+  <div><label>Modell</label><input name="model" type="text" value="<%= weapon.model || '' %>" placeholder="f.eks. 200 STR"></div>
+  <div><label>Kaliber</label><input name="caliber" type="text" value="<%= weapon.caliber || '' %>" placeholder="6,5×55"></div>
+</div>
+<div class="row">
+  <div><label>Serienummer</label><input name="serial_number" type="text" value="<%= weapon.serial_number || '' %>"></div>
+  <div><label>Våpenkortnummer</label><input name="card_number" type="text" value="<%= weapon.card_number || '' %>"></div>
+  <div><label>Registrert innehaver (våpenkort)</label><input name="card_holder" type="text" value="<%= weapon.card_holder || '' %>"></div>
+</div>
+<div class="row">
+  <div><label>Oppbevaringssted</label><input name="storage" type="text" value="<%= weapon.storage || '' %>" placeholder="f.eks. Våpenskap klubbhus"></div>
+  <div><label>Anskaffet</label><input name="acquired_date" type="date" value="<%= weapon.acquired_date || '' %>"></div>
+</div>
+<label>Kopi av våpenkort (PDF/bilde)</label><input name="card" type="file" accept=".pdf,image/*">
+<label>Notater</label><textarea name="notes"><%= weapon.notes || '' %></textarea>

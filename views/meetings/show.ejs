@@ -1,0 +1,139 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="<%= base %>"><%= cfg.list %></a></div>
+<div class="page-head">
+  <div>
+    <h1><%= meeting.title %></h1>
+    <div class="muted"><%= fmtLocal(meeting.starts_at) %><%= meeting.location ? ' · ' + meeting.location : '' %> · <span class="badge"><%= MEETING_STATUS[meeting.status] %></span></div>
+  </div>
+  <div class="actions">
+    <% if (meeting.meet_url) { %><a class="btn" href="<%= meeting.meet_url %>" target="_blank" rel="noopener">Bli med i Google Meet</a><% } %>
+    <a class="btn secondary" href="<%= base %>/<%= meeting.id %>/protokoll">Protokoll</a>
+    <% if (canWrite) { %>
+      <a class="btn secondary" href="/epost/ny?mote=<%= meeting.id %>">Send innkalling</a>
+      <a class="btn secondary" href="/epost/ny?mote=<%= meeting.id %>&type=protokoll">Send protokoll</a>
+      <a class="btn secondary" href="<%= base %>/<%= meeting.id %>/rediger">Rediger</a>
+    <% } %>
+  </div>
+</div>
+<% if (meeting.notes) { %><div class="card pre"><%= meeting.notes %></div><% } %>
+
+<div class="grid grid-dash">
+  <div>
+    <div class="card" id="saker">
+      <h2>Saksliste</h2>
+      <% if (!items.length) { %><p class="empty">Ingen saker ennå.</p><% } %>
+      <% items.forEach(it => { %>
+        <div class="card case" id="sak-<%= it.id %>">
+          <% if (canWrite) { %>
+          <details>
+            <summary><strong>Sak <%= caseNo(it) %> <%= it.title %></strong> <% if (it.decision) { %><span class="badge ok">Vedtak</span><% } %></summary>
+            <form method="post" action="<%= base %>/<%= meeting.id %>/saker/<%= it.id %>">
+              <%- include('../partials/csrf') %>
+              <label>Tittel</label><input name="title" type="text" value="<%= it.title %>">
+              <label>Saksfremstilling</label><textarea name="description"><%= it.description || '' %></textarea>
+              <label>Vedtak</label><textarea name="decision"><%= it.decision || '' %></textarea>
+              <div class="form-actions"><button class="small">Lagre sak</button></div>
+            </form>
+            <form method="post" action="<%= base %>/<%= meeting.id %>/saker/<%= it.id %>/slett" data-confirm="Slette saken?"><%- include('../partials/csrf') %><button class="link danger small">Slett sak</button></form>
+          </details>
+          <% } else { %><strong>Sak <%= caseNo(it) %> <%= it.title %></strong><% } %>
+          <% if (it.description) { %><p class="pre small"><%= it.description %></p><% } %>
+          <% if (it.decision) { %><div class="decision"><strong>Vedtak:</strong> <%= it.decision %></div><% } %>
+        </div>
+      <% }) %>
+      <% if (canWrite) { %>
+      <form method="post" action="<%= base %>/<%= meeting.id %>/saker">
+        <%- include('../partials/csrf') %>
+        <h3>Ny sak</h3>
+        <input name="title" type="text" placeholder="Sakstittel" required>
+        <label>Saksfremstilling (valgfritt)</label><textarea name="description"></textarea>
+        <div class="form-actions"><button>Legg til sak</button></div>
+      </form>
+      <% } %>
+    </div>
+
+    <div class="card" id="oppgaver">
+      <h2>Oppfølgingspunkter</h2>
+      <% if (!tasks.length) { %><p class="empty">Ingen.</p><% } %>
+      <ul class="list"><% tasks.forEach(t => { %><li><span class="<%= t.status === 'ferdig' ? 'done' : '' %>"><%= t.title %></span><span class="small muted"><%= t.assignee_name || '' %> <%= t.due_date ? fmtDate(t.due_date) : '' %></span></li><% }) %></ul>
+      <% if (canWrite) { %>
+      <form method="post" action="<%= base %>/<%= meeting.id %>/oppgaver" class="row">
+        <%- include('../partials/csrf') %>
+        <input name="title" type="text" placeholder="Hva skal gjøres?" required>
+        <select name="assignee_id"><option value="">Ansvarlig…</option><% users.forEach(u => { %><option value="<%= u.id %>"><%= u.name %></option><% }) %></select>
+        <input name="due_date" type="date">
+        <button>Legg til</button>
+      </form>
+      <% } %>
+    </div>
+  </div>
+
+  <div>
+    <div class="card" id="deltakere">
+      <h2>Deltakere og Google Meet</h2>
+      <% if (!attendees.length) { %><p class="empty">Ingen deltakere lagt inn.</p><% } %>
+      <ul class="list">
+      <% attendees.forEach(a => { %>
+        <li><span><%= a.name %><br><span class="small muted"><%= a.email || 'mangler e-post' %></span></span>
+          <% if (canWrite) { %><form method="post" action="<%= base %>/<%= meeting.id %>/deltakere/<%= a.id %>/fjern"><%- include('../partials/csrf') %><button class="link small danger">Fjern</button></form><% } %></li>
+      <% }) %>
+      </ul>
+      <% if (canWrite && members.length) { %>
+      <form method="post" action="<%= base %>/<%= meeting.id %>/deltakere">
+        <%- include('../partials/csrf') %>
+        <details><summary class="small">Legg til medlemmer i møtet</summary>
+          <div class="check-list">
+          <% members.forEach(m => { %><label><input type="checkbox" name="member_ids" value="<%= m.id %>"> <%= m.first_name %> <%= m.last_name %> <% if (m.has_role) { %><span class="badge">verv</span><% } %><% if (!m.email) { %><span class="small muted">(ingen e-post)</span><% } %></label><% }) %>
+          </div>
+          <div class="form-actions"><button class="small">Legg til</button></div>
+        </details>
+      </form>
+      <% } %>
+      <hr>
+      <% if (meeting.meet_url) { %><p><a href="<%= meeting.meet_url %>" target="_blank" rel="noopener"><%= meeting.meet_url %></a></p><% } %>
+      <% if (canWrite) { %>
+      <form method="post" action="<%= base %>/<%= meeting.id %>/meet" class="actions">
+        <%- include('../partials/csrf') %>
+        <input name="meet_url" type="url" value="<%= meeting.meet_url || '' %>" placeholder="https://meet.google.com/…">
+        <button class="small">Lagre Meet-lenke</button>
+        <a class="btn small secondary" href="https://meet.google.com/new" target="_blank" rel="noopener">Nytt Meet-rom</a>
+      </form>
+      <% } %>
+      <div class="form-actions">
+        <a class="btn" href="<%= gcal %>" target="_blank" rel="noopener">Legg i Google Kalender med deltakere</a>
+        <a class="btn secondary" href="<%= base %>/<%= meeting.id %>/kalender.ics">Last ned .ics</a>
+      </div>
+      <p class="small muted">«Legg i Google Kalender» åpner en ferdig utfylt hendelse med alle deltakerne som gjester. Trykk «Legg til videokonferanse i Google Meet» og lagre – da får alle invitasjon med Meet-lenke. Lim deretter Meet-lenken inn over, så kommer den med i innkallingen.</p>
+    </div>
+
+    <div class="card" id="dokumenter">
+      <h2>Dokumenter</h2>
+      <% if (folder) { %><p class="small"><a href="/dokumenter?mappe=<%= folder.id %>">📁 <%= folder.name %></a></p><% } %>
+      <% if (!docs.length) { %><p class="empty">Ingen dokumenter.</p><% } %>
+      <ul class="list">
+      <% docs.forEach(d => { %>
+        <li><a href="/dokumenter/<%= d.id %>"><%= d.title %></a>
+          <% if (canWrite && !d.inFolder) { %><form method="post" action="<%= base %>/<%= meeting.id %>/dokumenter/<%= d.id %>/fjern"><%- include('../partials/csrf') %><button class="link small">Fjern kobling</button></form><% } %></li>
+      <% }) %>
+      </ul>
+      <% if (hiddenDocs) { %><p class="small muted"><%= hiddenDocs %> dokument(er) du ikke har tilgang til.</p><% } %>
+      <% if (canWrite) { %>
+        <% if (folder) { %><a class="btn small" href="/dokumenter/ny?mappe=<%= folder.id %>&retur=<%= encodeURIComponent(base + '/' + meeting.id + '#dokumenter') %>">Last opp til møtemappen</a><% } %>
+        <% if (availableDocs.length) { %>
+        <form method="post" action="<%= base %>/<%= meeting.id %>/dokumenter">
+          <%- include('../partials/csrf') %>
+          <label>Koble eksisterende dokument (f.eks. fra «Større saker»)</label>
+          <select name="document_id"><% availableDocs.forEach(d => { %><option value="<%= d.id %>"><%= d.folder_name ? d.folder_name + ' / ' : '' %><%= d.title %></option><% }) %></select>
+          <div class="form-actions"><button class="small secondary">Koble til</button></div>
+        </form>
+        <% } %>
+      <% } %>
+    </div>
+    <% if (currentUser.role === 'admin') { %>
+    <form class="card" method="post" action="<%= base %>/<%= meeting.id %>/slett" data-confirm="Slette møtet? Dokumentmappen beholdes.">
+      <%- include('../partials/csrf') %><button class="danger small">Slett møtet</button>
+    </form>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

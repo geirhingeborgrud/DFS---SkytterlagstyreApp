@@ -1,0 +1,28 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/vapen/utlan">Utlånserklæringer</a></div>
+<h1>Mal for utlånserklæring</h1>
+<div class="grid grid-dash">
+  <form class="card" method="post" action="/vapen/utlan/mal">
+    <%- include('../partials/csrf') %>
+    <textarea name="template" class="tall"><%= template %></textarea>
+    <div class="form-actions"><button>Lagre mal</button></div>
+  </form>
+  <div>
+    <div class="card">
+      <h2>Hent mal fra MittDFS</h2>
+      <p class="small">Standardteksten her er et generelt utgangspunkt. Bruk gjerne DFS' gjeldende mal: logg inn på <a href="https://www.mittdfs.no" target="_blank" rel="noopener">mittdfs.no</a>, finn utlånserklæringen under dokumenter/skjema for laget, kopier teksten og lim den inn her. Sett inn flettefeltene under der opplysningene skal stå.</p>
+    </div>
+    <div class="card">
+      <h2>Flettefelt</h2>
+      <ul class="small">
+        <li><code>{lag}</code> skytterlaget</li><li><code>{navn}</code>, <code>{fodselsdato}</code>, <code>{skytterid}</code>, <code>{adresse}</code>, <code>{epost}</code>, <code>{telefon}</code></li>
+        <li><code>{vapentype}</code>, <code>{fabrikat}</code>, <code>{kaliber}</code>, <code>{serienummer}</code>, <code>{vapenkort}</code></li>
+        <li><code>{fra}</code>, <code>{til}</code>, <code>{formal}</code>, <code>{dato}</code> (dagens dato)</li>
+      </ul>
+    </div>
+    <form class="card" method="post" action="/vapen/utlan/mal" data-confirm="Tilbakestille til standardmalen?">
+      <%- include('../partials/csrf') %><input type="hidden" name="reset" value="1"><button class="secondary small">Tilbakestill til standard</button>
+    </form>
+  </div>
+</div>
+<%- include('../partials/footer') %>

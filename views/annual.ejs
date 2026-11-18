@@ -1,0 +1,51 @@
+<%- include('partials/header') %>
+<div class="page-head">
+  <h1>Årshjul</h1>
+  <% if (canWrite) { %>
+  <form method="post" action="/arshjul/generer" class="actions">
+    <%- include('partials/csrf') %>
+    <select name="year"><% [year, year + 1].forEach(y => { %><option value="<%= y %>"><%= y %><%= generated.includes(y) ? ' (generert)' : '' %></option><% }) %></select>
+    <button>Lag oppgaver for året</button>
+  </form>
+  <% } %>
+</div>
+<p class="muted small">Faste aktiviteter gjennom året. Forslagene er generelle – kontroller frister mot lagets lov, kretsen og DFS, og tilpass. «Lag oppgaver for året» oppretter én oppgave per aktivitet med frist i riktig måned.</p>
+<div class="grid grid-3">
+<% byMonth.forEach(m => { %>
+  <div class="card" id="m<%= m.month %>">
+    <h2><%= MONTHS[m.month - 1][0].toUpperCase() + MONTHS[m.month - 1].slice(1) %> <% if (m.month === currentMonth) { %><span class="badge red">nå</span><% } %></h2>
+    <% if (!m.items.length) { %><p class="empty small">Ingen aktiviteter.</p><% } %>
+    <% m.items.forEach(it => { %>
+      <% if (canWrite) { %>
+      <details>
+        <summary><%= it.day ? it.day + '. ' : '' %><%= it.title %> <span class="small muted"><%= it.responsible || '' %></span></summary>
+        <form method="post" action="/arshjul/<%= it.id %>">
+          <%- include('partials/csrf') %>
+          <div class="row"><div><label>Måned</label><input name="month" type="number" min="1" max="12" value="<%= it.month %>"></div><div><label>Dag</label><input name="day" type="number" min="1" max="31" value="<%= it.day || '' %>"></div></div>
+          <label>Tittel</label><input name="title" type="text" value="<%= it.title %>">
+          <label>Ansvarlig</label><input name="responsible" type="text" value="<%= it.responsible || '' %>">
+          <label>Beskrivelse</label><textarea name="description"><%= it.description || '' %></textarea>
+          <div class="form-actions"><button class="small">Lagre</button></div>
+        </form>
+        <form method="post" action="/arshjul/<%= it.id %>/slett" data-confirm="Slette aktiviteten?"><%- include('partials/csrf') %><button class="link small danger">Slett</button></form>
+      </details>
+      <% } else { %><p><strong><%= it.title %></strong><br><span class="small muted"><%= it.description %></span></p><% } %>
+    <% }) %>
+  </div>
+<% }) %>
+</div>
+<% if (canWrite) { %>
+<form class="card" method="post" action="/arshjul">
+  <%- include('partials/csrf') %>
+  <h2>Ny aktivitet</h2>
+  <div class="row">
+    <div><label>Måned</label><select name="month"><% MONTHS.forEach((n, i) => { %><option value="<%= i + 1 %>"><%= n %></option><% }) %></select></div>
+    <div><label>Dag (valgfri)</label><input name="day" type="number" min="1" max="31"></div>
+    <div><label>Ansvarlig</label><input name="responsible" type="text"></div>
+  </div>
+  <label>Tittel</label><input name="title" type="text" required>
+  <label>Beskrivelse</label><textarea name="description"></textarea>
+  <div class="form-actions"><button>Legg til</button></div>
+</form>
+<% } %>
+<%- include('partials/footer') %>

@@ -1,0 +1,23 @@
+<%- include('partials/header') %>
+<h1>Min profil</h1>
+<div class="grid grid-2">
+  <form class="card" method="post" action="/profil">
+    <%- include('partials/csrf') %>
+    <h2>Opplysninger</h2>
+    <label>E-post</label><input type="email" value="<%= currentUser.email %>" disabled>
+    <label for="name">Navn</label><input id="name" name="name" type="text" value="<%= currentUser.name %>" required>
+    <label for="phone">Telefon</label><input id="phone" name="phone" type="tel" value="<%= currentUser.phone || '' %>">
+    <p class="small muted">Tilgangsnivå: <%= ROLE_LABELS[currentUser.role] %>. Verv: <%= (currentUser.boardRoles || []).map(r => BOARD_ROLES[r]).join(', ') || 'ingen registrert' %>.</p>
+    <div class="form-actions"><button>Lagre</button></div>
+  </form>
+  <form class="card" method="post" action="/profil/passord">
+    <%- include('partials/csrf') %>
+    <h2>Bytt passord</h2>
+    <input type="email" value="<%= currentUser.email %>" autocomplete="username" hidden readonly>
+    <label for="current">Nåværende passord</label><input id="current" name="current" type="password" required autocomplete="current-password">
+    <label for="password">Nytt passord</label><input id="password" name="password" type="password" required minlength="10" autocomplete="new-password">
+    <label for="password2">Gjenta nytt passord</label><input id="password2" name="password2" type="password" required minlength="10" autocomplete="new-password">
+    <div class="form-actions"><button>Bytt passord</button></div>
+  </form>
+</div>
+<%- include('partials/footer') %>

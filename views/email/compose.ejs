@@ -1,0 +1,37 @@
+<%- include('../partials/header') %>
+<h1>Send e-post</h1>
+<% if (!smtp) { %><div class="flash warn">SMTP er ikke konfigurert. E-posten blir registrert, men ikke sendt. Se README for oppsett.</div><% } %>
+<form method="post" action="/epost/ny">
+  <%- include('../partials/csrf') %>
+  <div class="grid grid-2">
+    <div class="card">
+      <h2>Mottakere</h2>
+      <p class="actions small"><a href="#" data-check-all="recipients" data-filter="board">Velg/fjern styret</a> <a href="#" data-check-all="recipients">Velg/fjern alle</a></p>
+      <div class="check-list">
+      <% let shownOthers = false; recipients.forEach(r => { %>
+        <% if (!r.board && !shownOthers) { shownOthers = true; %><div class="small muted">Andre medlemmer</div><% } %>
+        <label><input type="checkbox" name="recipients" value="<%= r.key %>" data-group="<%= r.board ? 'board' : 'other' %>" <%= form.keys.includes(r.key) ? 'checked' : '' %>>
+          <span><%= r.name %> <span class="small muted">&lt;<%= r.email %>&gt;</span> <% if (r.roles.length) { %><span class="small">· <%= r.roles.map(x => BOARD_ROLES[x]).join(', ') %></span><% } %></span></label>
+      <% }) %>
+      </div>
+      <label for="extra">Andre adresser (skill med komma)</label>
+      <input id="extra" name="extra" type="text" value="<%= form.extra %>" placeholder="revisor@eksempel.no">
+    </div>
+    <div class="card">
+      <h2>Dokumenter</h2>
+      <div class="check-list">
+        <% if (!docs.length) { %><p class="empty">Ingen dokumenter.</p><% } %>
+        <% docs.forEach(d => { %><label><input type="checkbox" name="docs" value="<%= d.id %>" <%= form.docIds.includes(d.id) ? 'checked' : '' %>> <span><%= d.title %> <span class="small muted"><%= d.folder_name || '' %> · <%= fileSize(d.size) %></span></span></label><% }) %>
+      </div>
+      <label class="inline"><input type="radio" name="mode" value="vedlegg" <%= form.mode !== 'lenke' ? 'checked' : '' %>> Legg ved som vedlegg (maks 20 MB)</label>
+      <label class="inline"><input type="radio" name="mode" value="lenke" <%= form.mode === 'lenke' ? 'checked' : '' %>> Send lenker (krever innlogging)</label>
+    </div>
+  </div>
+  <div class="card">
+    <label for="subject">Emne</label><input id="subject" name="subject" type="text" value="<%= form.subject %>" required>
+    <label for="body">Tekst</label><textarea id="body" name="body" class="tall" required><%= form.body %></textarea>
+    <p class="small muted">Svar går til deg (<%= currentUser.email %>).</p>
+    <div class="form-actions"><button>Send</button><a class="btn secondary" href="/epost">Avbryt</a></div>
+  </div>
+</form>
+<%- include('../partials/footer') %>

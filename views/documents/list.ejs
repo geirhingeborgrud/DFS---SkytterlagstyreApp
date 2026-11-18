@@ -1,0 +1,33 @@
+<%- include('../partials/header') %>
+<div class="page-head">
+  <div>
+    <% if (crumbs.length) { %><div class="crumbs"><a href="/dokumenter">Dokumenter</a><% crumbs.slice(0, -1).forEach(c => { %> / <a href="/dokumenter?mappe=<%= c.id %>"><%= c.name %></a><% }) %></div><% } %>
+    <h1><%= folder ? folder.name : 'Dokumenter' %></h1>
+  </div>
+  <div class="actions">
+    <form method="get" action="/dokumenter" class="actions">
+      <% if (folderId) { %><input type="hidden" name="mappe" value="<%= folderId %>"><% } %>
+      <input type="search" name="q" value="<%= q || '' %>" placeholder="Søk i dokumenter">
+    </form>
+    <% if (canWrite) { %><a class="btn" href="/dokumenter/ny<%= folderId ? '?mappe=' + folderId : '' %>">Last opp</a><% } %>
+  </div>
+</div>
+<div class="docs-layout">
+  <nav class="card tree">
+    <a href="/dokumenter" class="<%= !folderId ? 'active' : '' %>">Alle / sist endret</a>
+    <% tree.filter(f => f.depth < 2).forEach(f => { %>
+      <a href="/dokumenter?mappe=<%= f.id %>" class="<%= f.id === folderId ? 'active' : '' %>"><%= '   '.repeat(f.depth) %><%= f.name %><span class="count"><%= counts[f.id] || '' %></span></a>
+    <% }) %>
+  </nav>
+  <div>
+    <% if (subfolders.length) { %>
+      <div class="folder-tiles"><% subfolders.forEach(f => { %><a href="/dokumenter?mappe=<%= f.id %>"><%= f.name %></a><% }) %></div>
+    <% } %>
+    <div class="card">
+      <% if (!folder && !q) { %><h2>Sist endret</h2><% } else if (q) { %><h2>Søk: «<%= q %>»</h2><% } %>
+      <%- include('../partials/doc-table', { docs }) %>
+    </div>
+    <p class="small muted">Du ser bare dokumenter du har minst lesetilgang til. Tilgangsnivåer: <strong>Les</strong> (se/laste ned), <strong>Rediger</strong> (nye versjoner, endre info), <strong>Eier</strong> (styre tilganger, slette).</p>
+  </div>
+</div>
+<%- include('../partials/footer') %>
