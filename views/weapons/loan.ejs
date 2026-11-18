@@ -1,0 +1,36 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/vapen/utlan">Utlånserklæringer</a></div>
+<div class="page-head"><h1>Utlån til <%= loan.first_name %> <%= loan.last_name %></h1>
+  <div class="actions"><span class="badge <%= loan.status === 'aktiv' ? 'warn' : 'ok' %>"><%= loan.status === 'aktiv' ? 'Utlånt' : 'Returnert ' + fmtDate(loan.returned_at) %></span>
+    <a class="btn secondary" href="/vapen/utlan/<%= loan.id %>/skriv-ut" target="_blank" rel="noopener">Skriv ut</a></div></div>
+<div class="grid grid-dash">
+  <div class="card">
+    <% if (canEdit) { %>
+    <form method="post" action="/vapen/utlan/<%= loan.id %>">
+      <%- include('../partials/csrf') %>
+      <label>Erklæring (kan redigeres)</label>
+      <textarea name="text" class="tall"><%= loan.text %></textarea>
+      <div class="form-actions"><button class="secondary">Lagre tekst</button></div>
+    </form>
+    <% } else { %><div class="letter"><%= loan.text %></div><% } %>
+  </div>
+  <div>
+    <div class="card"><h2>Våpen</h2><p><a href="/vapen/<%= loan.weapon_id %>"><%= weaponLabel(loan) %></a><br><span class="small">Serienr. <%= loan.serial_number || '–' %></span></p>
+      <p class="small">Periode: <%= fmtDate(loan.from_date) %> – <%= loan.to_date ? fmtDate(loan.to_date) : 'inntil videre' %></p></div>
+    <% if (canEdit) { %>
+    <form class="card" method="post" action="/vapen/utlan/<%= loan.id %>/send">
+      <%- include('../partials/csrf') %>
+      <h2>Send på e-post</h2>
+      <label>Til</label><input name="to" type="email" value="<%= loan.email || '' %>" required>
+      <p class="small muted">Du får kopi. Erklæringen legges ved som utskriftsvennlig fil og arkiveres under Dokumenter → Utlånserklæringer.<%= loan.emailed_at ? ' Sist sendt ' + fmtDateTime(loan.emailed_at) + '.' : '' %></p>
+      <div class="form-actions"><button>Send erklæring</button></div>
+    </form>
+    <% if (loan.status === 'aktiv') { %>
+    <form class="card" method="post" action="/vapen/utlan/<%= loan.id %>/retur" data-confirm="Registrere at våpenet er levert tilbake?">
+      <%- include('../partials/csrf') %><h2>Retur</h2><button class="secondary">Registrer tilbakelevert</button>
+    </form>
+    <% } %>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

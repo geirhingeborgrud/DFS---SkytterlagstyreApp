@@ -1,0 +1,46 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/stillinger">Stillingsinstrukser</a></div>
+<div class="page-head"><h1><%= label %></h1><div class="muted"><%= holders.map(fullName).join(', ') || 'Ingen har vervet nå' %></div></div>
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Instrukser og dokumenter</h2>
+    <% if (!docs.length) { %><p class="empty">Ingen dokumenter ennå.</p><% } %>
+    <ul class="list"><% docs.forEach(d => { %><li><a href="/dokumenter/<%= d.id %>"><%= d.title %></a><span class="small"><%= fmtDate(d.updated_at) %></span></li><% }) %></ul>
+    <% if (canWrite) { %><a class="btn small" href="/dokumenter/ny?mappe=<%= folderId %>&retur=/stillinger/<%= role %>">Last opp instruks</a><% } %>
+    <p class="small"><a href="/dokumenter?mappe=<%= folderId %>">Åpne mappen</a></p>
+  </div>
+  <div>
+    <% lists.forEach(l => { %>
+    <div class="card" id="liste-<%= l.id %>">
+      <div class="page-head"><h2><%= l.title %></h2><span class="badge"><%= l.items.filter(i => i.done_at).length %>/<%= l.items.length %></span></div>
+      <ul class="list">
+      <% l.items.forEach(i => { %>
+        <li id="punkt-<%= i.id %>">
+          <form method="post" action="/stillinger/<%= role %>/punkt/<%= i.id %>/kryss"><%- include('../partials/csrf') %>
+            <label class="inline"><input type="checkbox" <%= i.done_at ? 'checked' : '' %> <%= canTick ? 'data-autosubmit' : 'disabled' %>> <span class="<%= i.done_at ? 'done' : '' %>"><%= i.text %></span></label>
+            <noscript><button class="small">✓</button></noscript></form>
+          <span class="small muted"><%= i.done_at ? (i.done_by_name || '') + ' ' + fmtDate(i.done_at) : '' %>
+            <% if (canWrite) { %><form class="inline-form" method="post" action="/stillinger/<%= role %>/punkt/<%= i.id %>/slett"><%- include('../partials/csrf') %><button class="link small danger" title="Slett punkt">×</button></form><% } %></span>
+        </li>
+      <% }) %>
+      </ul>
+      <% if (canWrite) { %>
+      <form method="post" action="/stillinger/<%= role %>/sjekklister/<%= l.id %>/punkt" class="actions"><%- include('../partials/csrf') %><input name="text" type="text" placeholder="Nytt punkt" required><button class="small">Legg til</button></form>
+      <div class="actions">
+        <form method="post" action="/stillinger/<%= role %>/sjekklister/<%= l.id %>/nullstill" data-confirm="Fjerne alle avkrysninger (ny sesong)?"><%- include('../partials/csrf') %><button class="link small">Nullstill avkrysninger</button></form>
+        <form method="post" action="/stillinger/<%= role %>/sjekklister/<%= l.id %>/slett" data-confirm="Slette hele sjekklisten?"><%- include('../partials/csrf') %><button class="link small danger">Slett liste</button></form>
+      </div>
+      <% } %>
+    </div>
+    <% }) %>
+    <% if (canWrite) { %>
+    <form class="card" method="post" action="/stillinger/<%= role %>/sjekklister"><%- include('../partials/csrf') %>
+      <h2>Ny sjekkliste</h2>
+      <input name="title" type="text" placeholder="f.eks. Ved sesongstart" required>
+      <label>Punkter (ett per linje)</label><textarea name="items" placeholder="Kontrollere våpenskap&#10;Telle ammunisjon&#10;…"></textarea>
+      <div class="form-actions"><button>Opprett</button></div>
+    </form>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

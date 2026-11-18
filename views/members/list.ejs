@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<div class="page-head">
+  <h1>Medlemmer <span class="muted small">(<%= members.length %>)</span></h1>
+  <div class="actions">
+    <form method="get" action="/medlemmer" class="actions">
+      <input type="search" name="q" value="<%= q || '' %>" placeholder="Navn, skytter-ID, e-post">
+      <label class="inline"><input type="checkbox" name="alle" value="1" <%= showInactive ? 'checked' : '' %> data-autosubmit> Vis inaktive</label>
+    </form>
+    <a class="btn secondary" href="/medlemmer/import">Importer fra MittDFS</a>
+    <a class="btn secondary" href="/medlemmer/eksport.csv">Eksporter</a>
+    <a class="btn" href="/medlemmer/ny">Nytt medlem</a>
+  </div>
+</div>
+<div class="card">
+  <% if (!members.length) { %><p class="empty">Ingen medlemmer. Importer medlemslisten fra MittDFS, eller legg inn manuelt.</p><% } %>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Navn</th><th>Skytter-ID</th><th>Alder</th><th>Klasse</th><th>Kontakt</th><th>Verv</th></tr></thead>
+    <% members.forEach(m => { %>
+      <tr class="<%= m.active ? '' : 'muted' %>">
+        <td><a href="/medlemmer/<%= m.id %>"><%= m.last_name %>, <%= m.first_name %></a><%= m.active ? '' : ' (inaktiv)' %></td>
+        <td class="small"><%= m.shooter_id || '' %></td>
+        <td class="small"><%= ageOn(m.birth_date, now) ?? '' %></td>
+        <td class="small"><%= m.class || '' %></td>
+        <td class="small"><%= m.email || '' %><% if (m.phone) { %><br><%= m.phone %><% } %></td>
+        <td><% m.roles.forEach(r => { %><span class="badge navy"><%= BOARD_ROLES[r] %></span> <% }) %></td>
+      </tr>
+    <% }) %>
+  </table></div>
+</div>
+<%- include('../partials/footer') %>

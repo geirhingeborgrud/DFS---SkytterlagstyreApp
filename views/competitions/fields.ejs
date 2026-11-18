@@ -1,0 +1,13 @@
+<label>Navn</label><input name="name" type="text" value="<%= c.name || '' %>" required placeholder="f.eks. Landsskytterstevnet">
+<div class="row">
+  <div><label>Dato</label><input name="date" type="date" value="<%= c.date || '' %>" required></div>
+  <div><label>Til dato (flerdags)</label><input name="end_date" type="date" value="<%= c.end_date || '' %>"></div>
+  <div><label>Påmeldingsfrist</label><input name="signup_deadline" type="date" value="<%= c.signup_deadline || '' %>"></div>
+</div>
+<div class="row">
+  <div><label>Sted</label><input name="location" type="text" value="<%= c.location || '' %>"></div>
+  <div><label>Arrangør</label><input name="organizer" type="text" value="<%= c.organizer || '' %>"></div>
+  <div><label>Lenke (terminliste/påmelding)</label><input name="url" type="url" value="<%= c.url || '' %>"></div>
+</div>
+<label class="inline"><input type="checkbox" name="own_event" value="1" <%= c.own_event ? 'checked' : '' %>> Laget er arrangør</label>
+<label>Notater</label><textarea name="notes"><%= c.notes || '' %></textarea>

@@ -1,0 +1,39 @@
+<%- include('../partials/header') %>
+<div class="page-head">
+  <h1><%= cfg.list %></h1>
+  <% if (canWrite) { %><a class="btn" href="<%= base %>/ny">Nytt <%= cfg.one.toLowerCase() %></a><% } %>
+</div>
+<div class="grid grid-dash">
+  <div>
+    <div class="card">
+      <h2>Kommende</h2>
+      <% if (!upcoming.length) { %><p class="empty">Ingen planlagte møter.</p><% } %>
+      <ul class="list">
+      <% upcoming.forEach(m => { %>
+        <li><span><a href="<%= base %>/<%= m.id %>"><strong><%= m.title %></strong></a><br><span class="small muted"><%= fmtLocal(m.starts_at) %><%= m.location ? ' · ' + m.location : '' %></span></span>
+          <span><% if (m.meet_url) { %><a class="btn small secondary" href="<%= m.meet_url %>" target="_blank" rel="noopener">Google Meet</a><% } %> <span class="badge"><%= MEETING_STATUS[m.status] %></span></span></li>
+      <% }) %>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Tidligere</h2>
+      <% if (!past.length) { %><p class="empty">Ingen.</p><% } %>
+      <ul class="list">
+      <% past.forEach(m => { %>
+        <li><span><a href="<%= base %>/<%= m.id %>"><%= m.title %></a> <span class="small muted"><%= fmtLocal(m.starts_at) %></span></span>
+          <span><a class="small" href="<%= base %>/<%= m.id %>/protokoll">Protokoll</a> <span class="badge <%= m.status === 'gjennomfort' ? 'ok' : '' %>"><%= MEETING_STATUS[m.status] %></span></span></li>
+      <% }) %>
+      </ul>
+    </div>
+  </div>
+  <div>
+    <div class="card">
+      <h2>Mapper</h2>
+      <p class="small muted">Hvert <%= cfg.one.toLowerCase() %> får automatisk sin egen mappe under «<%= cfg.list %>».</p>
+      <ul class="list">
+        <% sharedFolders.forEach(f => { %><li><a href="/dokumenter?mappe=<%= f.id %>">📁 <%= f.name %></a><% if (canWrite) { %><a class="small" href="/dokumenter/ny?mappe=<%= f.id %>">Last opp</a><% } %></li><% }) %>
+      </ul>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

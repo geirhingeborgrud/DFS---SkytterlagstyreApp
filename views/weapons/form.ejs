@@ -1,0 +1,9 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/vapen">Våpen</a></div>
+<h1><%= title %></h1>
+<form class="card" method="post" action="/vapen/ny" enctype="multipart/form-data">
+  <%- include('../partials/csrf') %>
+  <%- include('fields') %>
+  <div class="form-actions"><button>Registrer</button><a class="btn secondary" href="/vapen">Avbryt</a></div>
+</form>
+<%- include('../partials/footer') %>

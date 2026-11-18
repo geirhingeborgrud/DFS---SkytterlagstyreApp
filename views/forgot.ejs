@@ -1,0 +1,10 @@
+<%- include('partials/auth-top') %>
+<p>Skriv inn e-postadressen din, så sender vi en lenke for å velge nytt passord.</p>
+<form method="post" action="/glemt-passord">
+  <%- include('partials/csrf') %>
+  <label for="email">E-post</label>
+  <input id="email" name="email" type="email" required autocomplete="username">
+  <button type="submit">Send lenke</button>
+</form>
+<p class="small"><a href="/logg-inn">Tilbake til innlogging</a></p>
+<%- include('partials/auth-bottom') %>

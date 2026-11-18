@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<h1>Stevner</h1>
+<div class="grid grid-dash">
+  <div>
+    <div class="card"><h2>Kommende</h2>
+      <% if (!upcoming.length) { %><p class="empty">Ingen registrerte stevner.</p><% } %>
+      <div class="table-wrap"><table>
+      <% upcoming.forEach(c => { %><tr><td class="nowrap"><%= fmtDate(c.date) %><%= c.end_date ? '–' + fmtDate(c.end_date) : '' %></td><td><a href="/stevner/<%= c.id %>"><%= c.name %></a> <% if (c.own_event) { %><span class="badge red">eget</span><% } %><div class="small muted"><%= c.location || '' %></div></td>
+        <td class="small"><%= c.signup_deadline ? 'Påmelding innen ' + fmtDate(c.signup_deadline) : '' %></td><td class="small"><%= c.participants %> påmeldt</td></tr><% }) %>
+      </table></div>
+    </div>
+    <div class="card"><h2>Tidligere</h2>
+      <% if (!past.length) { %><p class="empty">Ingen.</p><% } %>
+      <ul class="list"><% past.forEach(c => { %><li><a href="/stevner/<%= c.id %>"><%= c.name %></a><span class="small"><%= fmtDate(c.date) %> · <%= c.participants %> deltakere</span></li><% }) %></ul>
+    </div>
+  </div>
+  <% if (canWrite) { %>
+  <form class="card" method="post" action="/stevner">
+    <%- include('../partials/csrf') %><h2>Nytt stevne</h2>
+    <%- include('fields', { c: {} }) %>
+    <p class="small muted">Terminlisten finnes på <a href="https://www.mittdfs.no" target="_blank" rel="noopener">mittdfs.no</a>.</p>
+    <div class="form-actions"><button>Legg til</button></div>
+  </form>
+  <% } %>
+</div>
+<%- include('../partials/footer') %>

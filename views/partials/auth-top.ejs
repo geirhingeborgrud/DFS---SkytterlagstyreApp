@@ -1,0 +1,8 @@
+<%- include('head') %>
+<body>
+<div class="auth-page">
+  <div class="auth-card">
+    <% if (hasLogo) { %><img class="logo" src="/logo?v=<%= logoVersion %>" alt="<%= clubName %>"><% } %>
+    <h1><%= clubName %></h1>
+    <p class="sub">Styreportal<%= title ? ' · ' + title : '' %></p>
+    <%- include('flash') %>

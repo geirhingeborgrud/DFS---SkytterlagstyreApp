@@ -1,0 +1,32 @@
+<%- include('partials/header') %>
+<div class="page-head">
+  <h1>Kalender – <%= MONTHS[month - 1] %> <%= year %></h1>
+  <div class="actions">
+    <a class="btn secondary" href="/kalender?ar=<%= prev.ar %>&mnd=<%= prev.mnd %><%= selected.map(s => '&vis=' + s).join('') %>">‹ Forrige</a>
+    <a class="btn secondary" href="/kalender">I dag</a>
+    <a class="btn secondary" href="/kalender?ar=<%= next.ar %>&mnd=<%= next.mnd %><%= selected.map(s => '&vis=' + s).join('') %>">Neste ›</a>
+  </div>
+</div>
+<form class="card" method="get" action="/kalender">
+  <input type="hidden" name="ar" value="<%= year %>"><input type="hidden" name="mnd" value="<%= month %>">
+  <strong class="small">Vis:</strong>
+  <% Object.entries(TYPES).forEach(([k, t]) => { %>
+    <label class="inline"><input type="checkbox" name="vis" value="<%= k %>" <%= !selected.length || selected.includes(k) ? 'checked' : '' %> data-autosubmit> <%= t.label %></label>
+  <% }) %>
+  <noscript><button class="small">Oppdater</button></noscript>
+</form>
+<div class="card">
+  <%- include('partials/calendar-grid') %>
+</div>
+<div class="card">
+  <h2>Neste 60 dager</h2>
+  <% if (!upcoming.length) { %><p class="empty">Ingen hendelser.</p><% } %>
+  <div class="table-wrap"><table>
+  <% upcoming.forEach(e => { %>
+    <tr><td class="nowrap"><%= fmtDate(e.date) %> <%= e.time || '' %></td><td><span class="badge"><%= TYPES[e.type].label %></span></td><td><a href="<%= e.url %>"><%= e.title %></a></td>
+      <td><% if (e.meet) { %><a href="<%= e.meet %>" target="_blank" rel="noopener">Google Meet</a><% } %></td></tr>
+  <% }) %>
+  </table></div>
+  <p class="small muted">Nye hendelser legges inn under <a href="/moter">Styremøter</a>, <a href="/arsmoter">Årsmøter</a>, <a href="/treninger">Treninger</a>, <a href="/stevner">Stevner</a> og <a href="/oppgaver">Oppgaver</a>.</p>
+</div>
+<%- include('partials/footer') %>

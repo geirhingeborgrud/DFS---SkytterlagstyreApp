@@ -1,0 +1,31 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/vapen">Våpen</a></div>
+<div class="page-head"><h1><%= weaponLabel(weapon) %></h1>
+  <div class="actions"><span class="badge"><%= KINDS[weapon.kind] %></span><span class="badge <%= weapon.status === 'utlant' ? 'warn' : 'ok' %>"><%= WEAPON_STATUS[weapon.status] %></span>
+  <% if (canEdit && weapon.status === 'aktiv') { %><a class="btn" href="/vapen/utlan/ny?vapen=<%= weapon.id %>">Lån ut</a><% } %></div></div>
+<div class="grid grid-dash">
+  <% if (canEdit) { %>
+  <form class="card" method="post" action="/vapen/<%= weapon.id %>" enctype="multipart/form-data">
+    <%- include('../partials/csrf') %>
+    <%- include('fields') %>
+    <label>Status</label><select name="status"><% Object.entries(WEAPON_STATUS).forEach(([k, v]) => { %><option value="<%= k %>" <%= weapon.status === k ? 'selected' : '' %>><%= v %></option><% }) %></select>
+    <div class="form-actions"><button>Lagre</button></div>
+  </form>
+  <% } else { %>
+  <div class="card">
+    <p>Serienr.: <%= weapon.serial_number || '–' %><br>Våpenkort: <%= weapon.card_number || '–' %><br>Innehaver: <%= weapon.card_holder || '–' %><br>Oppbevaring: <%= weapon.storage || '–' %></p>
+    <% if (weapon.notes) { %><p class="pre"><%= weapon.notes %></p><% } %>
+  </div>
+  <% } %>
+  <div>
+    <div class="card"><h2>Våpenkort</h2>
+      <% if (card) { %><p><a href="/dokumenter/<%= card.id %>">📄 <%= card.title %></a></p><p><a class="btn small secondary" href="/dokumenter/<%= card.id %>/last-ned?vis=1" target="_blank" rel="noopener">Vis</a></p>
+      <% } else { %><p class="empty">Ingen kopi lastet opp.</p><% } %>
+    </div>
+    <div class="card"><h2>Utlånshistorikk</h2>
+      <% if (!loans.length) { %><p class="empty">Ingen utlån.</p><% } %>
+      <ul class="list"><% loans.forEach(l => { %><li><a href="/vapen/utlan/<%= l.id %>"><%= l.first_name %> <%= l.last_name %></a><span class="small"><%= fmtDate(l.from_date) %> – <%= l.to_date ? fmtDate(l.to_date) : '' %> <span class="badge <%= l.status === 'aktiv' ? 'warn' : '' %>"><%= l.status %></span></span></li><% }) %></ul>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<h1>Last opp dokument</h1>
+<form class="card" method="post" action="/dokumenter/ny" enctype="multipart/form-data">
+  <%- include('../partials/csrf') %>
+  <% if (retur) { %><input type="hidden" name="retur" value="<%= retur %>"><% } %>
+  <label for="file">Fil (maks 25 MB)</label>
+  <input id="file" name="file" type="file" required>
+  <label for="title">Tittel <span class="muted small">(standard: filnavnet)</span></label>
+  <input id="title" name="title" type="text">
+  <label for="folder_id">Mappe</label>
+  <select id="folder_id" name="folder_id">
+    <option value="">(ingen mappe)</option>
+    <% folders.forEach(f => { %><option value="<%= f.id %>" <%= f.id === folderId ? 'selected' : '' %>><%= f.path %></option><% }) %>
+  </select>
+  <label for="description">Beskrivelse</label>
+  <textarea id="description" name="description"></textarea>
+  <label for="default_access">Tilgang for hele styret</label>
+  <select id="default_access" name="default_access">
+    <option value="read" selected>Les – alle i styret kan lese</option>
+    <option value="edit">Rediger – alle i styret kan laste opp nye versjoner</option>
+    <option value="none">Ingen – kun deg og de du gir tilgang</option>
+  </select>
+  <p class="small muted">Du blir eier av dokumentet og kan gi enkeltpersoner Les, Rediger eller Eier-tilgang etterpå. Brukere med «kun lesetilgang» (f.eks. revisor) ser bare dokumenter de får tilgang til eksplisitt.</p>
+  <div class="form-actions"><button>Last opp</button><a class="btn secondary" href="<%= retur || '/dokumenter' %>">Avbryt</a></div>
+</form>
+<%- include('../partials/footer') %>

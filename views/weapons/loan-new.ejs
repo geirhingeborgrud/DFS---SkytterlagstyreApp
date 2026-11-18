@@ -1,0 +1,19 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/vapen/utlan">Utlånserklæringer</a></div>
+<h1>Ny utlånserklæring</h1>
+<form class="card" method="post" action="/vapen/utlan/ny">
+  <%- include('../partials/csrf') %>
+  <div class="row">
+    <div><label>Våpen / våpendel</label><select name="weapon_id" required><option value="">Velg…</option><% weapons.forEach(w => { %><option value="<%= w.id %>" <%= w.id === weaponId ? 'selected' : '' %>><%= weaponLabel(w) %> – <%= w.serial_number || 'uten serienr.' %></option><% }) %></select></div>
+    <div><label>Skytter fra laget</label><select name="member_id" required><option value="">Velg…</option><% members.forEach(m => { %><option value="<%= m.id %>"><%= m.last_name %>, <%= m.first_name %><%= m.shooter_id ? ' (' + m.shooter_id + ')' : '' %><%= m.email ? '' : ' – mangler e-post' %></option><% }) %></select></div>
+  </div>
+  <div class="row">
+    <div><label>Fra dato</label><input name="from_date" type="date" value="<%= now %>" required></div>
+    <div><label>Til dato</label><input name="to_date" type="date"></div>
+    <div><label>Formål</label><input name="purpose" type="text" placeholder="f.eks. trening og stevner sesongen <%= now.slice(0,4) %>"></div>
+  </div>
+  <% if (!weapons.length) { %><p class="flash warn">Ingen ledige våpen. Registrer våpen først, eller registrer retur av utlånte.</p><% } %>
+  <p class="small muted">Erklæringen fylles ut fra <a href="/vapen/utlan/mal">malen</a> med opplysninger om skytter og våpen. Du kan redigere teksten før den sendes.</p>
+  <div class="form-actions"><button>Lag erklæring</button></div>
+</form>
+<%- include('../partials/footer') %>

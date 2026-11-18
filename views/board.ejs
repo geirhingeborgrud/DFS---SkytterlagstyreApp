@@ -1,0 +1,64 @@
+<%- include('partials/header') %>
+<h1>Styret og tilganger</h1>
+<% if (inviteLink) { %>
+<div class="flash <%= inviteLink.sent ? 'ok' : 'warn' %>">
+  <% if (inviteLink.sent) { %>Invitasjon sendt til <%= inviteLink.name %>.<% } else { %>E-post ble ikke sendt (SMTP ikke konfigurert). Del lenken med <%= inviteLink.name %> selv:<% } %>
+  <br><code><%= inviteLink.link %></code>
+</div>
+<% } %>
+
+<div class="card">
+  <h2>Styreoversikt</h2>
+  <% if (!board.length) { %><p class="empty">Ingen verv registrert. Sett verv på medlemmer under <a href="/medlemmer">Medlemmer</a> (administrator).</p><% } %>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Navn</th><th>Verv</th><th>Kontakt</th><th>Innlogging</th></tr></thead>
+    <% board.forEach(m => { %>
+      <tr><td><span class="dot <%= isOnline(m) ? 'online' : '' %>" title="<%= isOnline(m) ? 'Pålogget nå' : '' %>"></span></td>
+        <td><% if (canWrite) { %><a href="/medlemmer/<%= m.id %>"><%= fullName(m) %></a><% } else { %><%= fullName(m) %><% } %></td>
+        <td><% m.roles.forEach(r => { %><span class="badge navy"><%= BOARD_ROLES[r] %></span> <% }) %></td>
+        <td class="small"><% if (m.email) { %><a href="mailto:<%= m.email %>"><%= m.email %></a><br><% } %><% if (m.phone) { %><a href="tel:<%= m.phone %>"><%= m.phone %></a><% } %></td>
+        <td class="small"><%= m.user_id ? (isOnline(m) ? 'Pålogget nå' : 'Har tilgang') : 'Ingen bruker' %></td></tr>
+    <% }) %>
+  </table></div>
+</div>
+
+<% if (currentUser.role === 'admin') { %>
+<div class="card">
+  <h2>Brukere (innlogging)</h2>
+  <p class="small muted"><strong>Administrator</strong>: alt, inkl. brukere, verv og alle dokumenter. <strong>Styremedlem</strong>: lese/skrive i styrefunksjonene, får standardtilgang til dokumenter. <strong>Kun lesetilgang</strong>: f.eks. revisor/valgkomité – ser møter og kalender, og bare dokumenter de får tilgang til. Verv som <em>våpenansvarlig</em> og <em>kasserer</em> gir i tillegg rett til å endre våpen- og ammoregisteret.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Bruker</th><th>Tilgangsnivå</th><th>Koblet medlem</th><th>Status</th><th></th></tr></thead>
+    <% users.forEach(u => { %>
+    <tr>
+      <td colspan="5">
+        <form method="post" action="/styret/brukere/<%= u.id %>" class="row">
+          <%- include('partials/csrf') %>
+          <div><input name="name" type="text" value="<%= u.name %>" aria-label="Navn"><input name="email" type="email" value="<%= u.email %>" aria-label="E-post"></div>
+          <div><select name="role" aria-label="Tilgangsnivå"><% Object.entries(ROLE_LABELS).forEach(([k, v]) => { %><option value="<%= k %>" <%= u.role === k ? 'selected' : '' %>><%= v %></option><% }) %></select>
+            <input name="phone" type="tel" value="<%= u.phone || '' %>" placeholder="Telefon"></div>
+          <div><select name="member_id" aria-label="Medlem"><option value="">(ikke koblet)</option><% members.forEach(m => { %><option value="<%= m.id %>" <%= m.id === u.member_id ? 'selected' : '' %>><%= m.last_name %>, <%= m.first_name %></option><% }) %></select></div>
+          <div class="small"><label class="inline"><input type="checkbox" name="active" value="1" <%= u.active ? 'checked' : '' %>> Aktiv</label><br>
+            <span class="dot <%= isOnline(u) ? 'online' : '' %>"></span><%= isOnline(u) ? 'Pålogget nå' : (u.last_seen ? 'Sist sett ' + fmtDateTime(new Date(u.last_seen).toISOString()) : (u.has_password ? 'Aldri innlogget' : 'Ikke akseptert invitasjon')) %></div>
+          <div class="actions"><button class="small">Lagre</button></div>
+        </form>
+        <% if (u.active && u.id !== currentUser.id) { %><form method="post" action="/styret/brukere/<%= u.id %>/inviter"><%- include('partials/csrf') %><button class="link small"><%= u.has_password ? 'Send ny innloggingslenke' : 'Send invitasjon på nytt' %></button></form><% } %>
+      </td>
+    </tr>
+    <% }) %>
+  </table></div>
+</div>
+
+<form class="card" method="post" action="/styret/brukere">
+  <%- include('partials/csrf') %>
+  <h2>Gi innloggingstilgang</h2>
+  <% if (unlinkedBoard.length) { %><p class="small">Styremedlemmer uten tilgang: <%= unlinkedBoard.map(fullName).join(', ') %></p><% } %>
+  <div class="row">
+    <div><label>Velg medlem</label><select name="member_id"><option value="">(eller fyll inn navn/e-post)</option><% members.forEach(m => { %><option value="<%= m.id %>"><%= m.last_name %>, <%= m.first_name %><%= m.email ? '' : ' (mangler e-post)' %></option><% }) %></select></div>
+    <div><label>Navn</label><input name="name" type="text" placeholder="hentes fra medlem"></div>
+    <div><label>E-post</label><input name="email" type="email" placeholder="hentes fra medlem"></div>
+    <div><label>Tilgangsnivå</label><select name="role"><option value="styre">Styremedlem</option><option value="les">Kun lesetilgang</option><option value="admin">Administrator</option></select></div>
+  </div>
+  <div class="form-actions"><button>Opprett og send invitasjon</button></div>
+</form>
+<% } %>
+<%- include('partials/footer') %>

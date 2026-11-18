@@ -1,0 +1,92 @@
+<%- include('../partials/header') %>
+<div class="page-head"><h1>Ammunisjon</h1>
+  <form method="get" action="/vapen/ammo"><select name="ar" data-autosubmit><% for (let y = Number(now.slice(0,4)); y >= Number(now.slice(0,4)) - 5; y--) { %><option <%= y === year ? 'selected' : '' %>><%= y %></option><% } %></select></form></div>
+<%- include('tabs') %>
+<div class="card">
+  <h2>Status beholdning</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Type</th><th>Kaliber</th><th class="right">Beholdning</th><th class="right">Salgspris</th><th class="right">Minimum</th><% if (canEdit) { %><th></th><% } %></tr></thead>
+    <% stock.forEach(s => { %>
+      <tr><td><strong><%= s.name %></strong></td><td class="small"><%= s.caliber || '' %></td>
+        <td class="right"><span class="badge <%= s.min_stock != null && s.stock < s.min_stock ? 'red' : 'ok' %>"><%= s.stock.toLocaleString('nb-NO') %> <%= s.unit %></span></td>
+        <td class="right small"><%= s.price != null ? money(s.price) + ' / ' + s.unit : '' %></td><td class="right small"><%= s.min_stock ?? '' %></td>
+        <% if (canEdit) { %><td><details><summary class="small">Endre</summary>
+          <form method="post" action="/vapen/ammo/typer/<%= s.id %>"><%- include('../partials/csrf') %>
+            <input name="name" value="<%= s.name %>"><input name="caliber" value="<%= s.caliber || '' %>" placeholder="Kaliber">
+            <input name="unit" value="<%= s.unit %>"><input name="price" value="<%= s.price ?? '' %>" placeholder="Pris per enhet"><input name="min_stock" type="number" value="<%= s.min_stock ?? '' %>" placeholder="Minimum">
+            <select name="active"><option value="1">Aktiv</option><option value="0">Skjul</option></select>
+            <button class="small">Lagre</button></form></details></td><% } %></tr>
+    <% }) %>
+  </table></div>
+  <% if (canEdit) { %>
+  <details><summary class="small">Ny ammunisjonstype</summary>
+    <form method="post" action="/vapen/ammo/typer" class="row"><%- include('../partials/csrf') %>
+      <input name="name" placeholder="Navn" required><input name="caliber" placeholder="Kaliber"><input name="unit" placeholder="Enhet (skudd/eske)" value="skudd">
+      <input name="price" placeholder="Salgspris per enhet"><input name="min_stock" type="number" placeholder="Varsle under"><button class="small">Legg til</button></form>
+  </details>
+  <% } %>
+</div>
+
+<% if (canEdit) { %>
+<div class="grid grid-2">
+  <form class="card" method="post" action="/vapen/ammo">
+    <%- include('../partials/csrf') %><input type="hidden" name="kind" value="salg">
+    <h2>Registrer salg</h2>
+    <label>Kjøper (skytter fra medlemsregisteret)</label>
+    <select name="member_id"><option value="">Velg skytter…</option><% members.forEach(m => { %><option value="<%= m.id %>"><%= m.last_name %>, <%= m.first_name %><%= m.shooter_id ? ' (' + m.shooter_id + ')' : '' %></option><% }) %></select>
+    <label>…eller annen kjøper</label><input name="counterparty" type="text" placeholder="Navn">
+    <div class="row">
+      <div><label>Type</label><select name="ammo_type_id"><% stock.forEach(s => { %><option value="<%= s.id %>"><%= s.name %> (<%= s.stock %>)</option><% }) %></select></div>
+      <div><label>Antall</label><input name="quantity" type="number" min="1" required></div>
+      <div><label>Pris per enhet</label><input name="unit_price" type="text" placeholder="standardpris"></div>
+      <div><label>Dato</label><input name="date" type="date" value="<%= now %>"></div>
+    </div>
+    <label class="inline"><input type="checkbox" name="paid" value="1"> Betalt</label>
+    <label>Merknad</label><input name="note" type="text">
+    <div class="form-actions"><button>Registrer salg</button></div>
+  </form>
+  <form class="card" method="post" action="/vapen/ammo">
+    <%- include('../partials/csrf') %><input type="hidden" name="kind" value="kjop">
+    <h2>Registrer innkjøp</h2>
+    <label>Leverandør</label><input name="counterparty" type="text" placeholder="f.eks. DFS Skytterlagsbutikk / Nammo">
+    <div class="row">
+      <div><label>Type</label><select name="ammo_type_id"><% stock.forEach(s => { %><option value="<%= s.id %>"><%= s.name %></option><% }) %></select></div>
+      <div><label>Antall</label><input name="quantity" type="number" min="1" required></div>
+      <div><label>Innkjøpspris per enhet</label><input name="unit_price" type="text"></div>
+      <div><label>Dato</label><input name="date" type="date" value="<%= now %>"></div>
+    </div>
+    <label class="inline"><input type="checkbox" name="paid" value="1" checked> Betalt</label>
+    <label>Merknad / fakturanr.</label><input name="note" type="text">
+    <div class="form-actions"><button>Registrer innkjøp</button></div>
+  </form>
+</div>
+<form class="card" method="post" action="/vapen/ammo">
+  <%- include('../partials/csrf') %><input type="hidden" name="kind" value="justering">
+  <h3>Lagerjustering</h3>
+  <div class="row">
+    <select name="ammo_type_id"><% stock.forEach(s => { %><option value="<%= s.id %>"><%= s.name %></option><% }) %></select>
+    <input name="quantity" type="number" placeholder="+/- antall" required>
+    <input name="date" type="date" value="<%= now %>">
+    <input name="note" type="text" placeholder="Årsak (f.eks. varetelling)" required>
+    <button class="secondary">Juster</button>
+  </div>
+</form>
+<% } %>
+
+<div class="card">
+  <h2>Transaksjoner <%= year %></h2>
+  <p class="small">Innkjøp: <strong><%= money(totals.kjop) %></strong> · Salg: <strong><%= money(totals.salg) %></strong> · Utestående: <strong><%= money(totals.ubetalt) %></strong></p>
+  <% if (!transactions.length) { %><p class="empty">Ingen transaksjoner.</p><% } %>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Dato</th><th>Type</th><th>Ammunisjon</th><th class="right">Antall</th><th class="right">Sum</th><th>Kjøper / leverandør</th><th>Betalt</th><% if (canEdit) { %><th></th><% } %></tr></thead>
+    <% transactions.forEach(t => { %>
+      <tr><td class="nowrap small"><%= fmtDate(t.date) %></td><td><span class="badge <%= t.kind === 'salg' ? 'navy' : '' %>"><%= AMMO_KIND[t.kind] %></span></td><td class="small"><%= t.ammo_name %></td>
+        <td class="right"><%= t.kind === 'salg' ? '−' : (t.quantity > 0 && t.kind === 'kjop' ? '+' : '') %><%= t.quantity %></td>
+        <td class="right small"><%= t.unit_price != null ? money(t.unit_price * t.quantity) : '' %></td>
+        <td class="small"><% if (t.member_id) { %><a href="/medlemmer/<%= t.member_id %>"><%= t.member_name %></a><% } else { %><%= t.counterparty || '' %><% } %><% if (t.note) { %><div class="muted"><%= t.note %></div><% } %></td>
+        <td><% if (t.kind !== 'justering') { %><% if (canEdit) { %><form method="post" action="/vapen/ammo/<%= t.id %>/betalt"><%- include('../partials/csrf') %><button class="link small"><%= t.paid ? '✔ betalt' : 'merk betalt' %></button></form><% } else { %><%= t.paid ? '✔' : '' %><% } %><% } %></td>
+        <% if (canEdit) { %><td><form method="post" action="/vapen/ammo/<%= t.id %>/slett" data-confirm="Slette transaksjonen?"><%- include('../partials/csrf') %><button class="link small danger">Slett</button></form></td><% } %></tr>
+    <% }) %>
+  </table></div>
+</div>
+<%- include('../partials/footer') %>

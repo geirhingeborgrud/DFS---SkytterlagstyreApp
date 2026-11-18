@@ -1,0 +1,14 @@
+<%- include('../partials/header') %>
+<h1><%= member.id ? 'Rediger medlem' : 'Nytt medlem' %></h1>
+<form class="card" method="post" action="<%= member.id ? '/medlemmer/' + member.id : '/medlemmer/ny' %>">
+  <%- include('../partials/csrf') %>
+  <%- include('fields', { member }) %>
+  <% if (currentUser.role === 'admin') { %>
+  <fieldset><legend>Verv (et medlem kan ha flere)</legend>
+    <input type="hidden" name="roles_submitted" value="1">
+    <% Object.entries(BOARD_ROLES).forEach(([k, v]) => { %><label class="inline"><input type="checkbox" name="roles" value="<%= k %>" <%= roles.includes(k) ? 'checked' : '' %>> <%= v %></label><% }) %>
+  </fieldset>
+  <% } %>
+  <div class="form-actions"><button>Lagre</button><a class="btn secondary" href="/medlemmer">Avbryt</a></div>
+</form>
+<%- include('../partials/footer') %>

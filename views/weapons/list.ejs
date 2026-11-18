@@ -1,0 +1,16 @@
+<%- include('../partials/header') %>
+<div class="page-head"><h1>Våpen og ammunisjon</h1>
+  <% if (canEdit) { %><div class="actions"><a class="btn" href="/vapen/ny?type=rifle">Registrer rifle</a><a class="btn" href="/vapen/ny?type=del">Registrer våpendel</a></div><% } %></div>
+<%- include('tabs') %>
+<div class="stats">
+  <div class="card"><div class="stat"><%= rifles.length %></div>rifler</div>
+  <div class="card"><div class="stat"><%= parts.length %></div>våpendeler</div>
+  <div class="card"><div class="stat"><%= activeLoans %></div>aktive utlån</div>
+  <% stock.forEach(s => { %><div class="card"><div class="stat"><%= s.stock.toLocaleString('nb-NO') %></div><%= s.unit %> <%= s.name %></div><% }) %>
+</div>
+<br>
+<div class="card"><h2>Rifler</h2><%- include('table', { list: rifles, kindLabel: 'Rifle' }) %></div>
+<div class="card"><h2>Våpendeler</h2><%- include('table', { list: parts, kindLabel: 'Våpendel' }) %></div>
+<p class="small"><a href="/vapen<%= showAll ? '' : '?alle=1' %>"><%= showAll ? 'Skjul avhendede' : 'Vis også avhendede' %></a></p>
+<% if (!canEdit) { %><p class="small muted">Kun administrator og våpenansvarlig kan endre våpenregisteret.</p><% } %>
+<%- include('../partials/footer') %>

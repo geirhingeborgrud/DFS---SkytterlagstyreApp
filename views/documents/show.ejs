@@ -1,0 +1,93 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/dokumenter">Dokumenter</a><% crumbs.forEach(c => { %> / <a href="/dokumenter?mappe=<%= c.id %>"><%= c.name %></a><% }) %></div>
+<div class="page-head">
+  <h1><%= doc.title %></h1>
+  <div class="actions">
+    <span class="badge <%= doc.level === 'owner' ? 'navy' : '' %>">Din tilgang: <%= LEVEL_LABELS[doc.level] %></span>
+    <% if (versions.length) { %>
+      <a class="btn" href="/dokumenter/<%= doc.id %>/last-ned">Last ned</a>
+      <% if (/^(application\/pdf|image\/|text\/plain)/.test(versions[0].mime || '')) { %><a class="btn secondary" href="/dokumenter/<%= doc.id %>/last-ned?vis=1" target="_blank" rel="noopener">Vis</a><% } %>
+    <% } %>
+    <% if (canWrite) { %><a class="btn secondary" href="/epost/ny?dok=<%= doc.id %>">Send på e-post</a><% } %>
+  </div>
+</div>
+<div class="grid grid-2">
+  <div>
+    <div class="card">
+      <% if (doc.description) { %><p class="pre"><%= doc.description %></p><% } %>
+      <p class="small muted">Mappe: <%= doc.folder_name || '–' %> · Eier: <%= doc.owner_name %> · Opprettet <%= fmtDate(doc.created_at) %></p>
+      <% if (meetings.length) { %><p class="small">Knyttet til møte: <% meetings.forEach(m => { %><a href="/<%= m.type === 'arsmote' ? 'arsmoter' : 'moter' %>/<%= m.id %>"><%= m.title %> <%= fmtLocal(m.starts_at) %></a> <% }) %></p><% } %>
+    </div>
+    <div class="card">
+      <h2>Versjoner</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Fil</th><th>Lastet opp</th><th></th></tr></thead>
+        <% versions.forEach(v => { %>
+          <tr><td>v<%= v.version %></td><td><%= v.original_name %><div class="small muted"><%= fileSize(v.size) %><%= v.note ? ' · ' + v.note : '' %></div></td>
+            <td class="small"><%= v.uploader %><br><%= fmtDateTime(v.uploaded_at) %></td>
+            <td><a href="/dokumenter/<%= doc.id %>/last-ned?versjon=<%= v.version %>">Last ned</a></td></tr>
+        <% }) %>
+      </table></div>
+      <% if (doc.level === 'edit' || doc.level === 'owner') { %>
+      <form method="post" action="/dokumenter/<%= doc.id %>/ny-versjon" enctype="multipart/form-data">
+        <%- include('../partials/csrf') %>
+        <h3>Last opp ny versjon</h3>
+        <input name="file" type="file" required>
+        <label for="note">Kommentar</label><input id="note" name="note" type="text" placeholder="Hva er endret?">
+        <div class="form-actions"><button>Last opp versjon</button></div>
+      </form>
+      <% } %>
+    </div>
+  </div>
+  <div>
+    <% if (doc.level === 'edit' || doc.level === 'owner') { %>
+    <form class="card" method="post" action="/dokumenter/<%= doc.id %>/rediger">
+      <%- include('../partials/csrf') %>
+      <h2>Rediger informasjon</h2>
+      <label for="t">Tittel</label><input id="t" name="title" type="text" value="<%= doc.title %>" required>
+      <label for="f">Mappe</label>
+      <select id="f" name="folder_id"><option value="">(ingen mappe)</option>
+        <% folders.forEach(f => { %><option value="<%= f.id %>" <%= f.id === doc.folder_id ? 'selected' : '' %>><%= f.path %></option><% }) %></select>
+      <label for="d">Beskrivelse</label><textarea id="d" name="description"><%= doc.description || '' %></textarea>
+      <div class="form-actions"><button>Lagre</button></div>
+    </form>
+    <% } %>
+    <% if (doc.level === 'owner') { %>
+    <form class="card" method="post" action="/dokumenter/<%= doc.id %>/tilgang">
+      <%- include('../partials/csrf') %>
+      <h2>Tilganger</h2>
+      <label for="da">Hele styret (brukere med rolle Styremedlem/Administrator)</label>
+      <select id="da" name="default_access">
+        <% [['none','Ingen tilgang'],['read','Les'],['edit','Rediger']].forEach(([v,l]) => { %><option value="<%= v %>" <%= doc.default_access === v ? 'selected' : '' %>><%= l %></option><% }) %>
+      </select>
+      <h3>Enkeltpersoner</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Person</th><th>Eksplisitt tilgang</th><th>Effektiv</th></tr></thead>
+        <% users.forEach(u => { %>
+          <tr><td><%= u.name %><div class="small muted"><%= ROLE_LABELS[u.role] %></div></td>
+            <td><% if (u.id === doc.owner_id) { %><span class="badge navy">Eier</span><% } else if (u.role === 'admin') { %><span class="small muted">Administrator</span><% } else { %>
+              <select name="perm_<%= u.id %>">
+                <option value="">(standard)</option>
+                <% [['read','Les'],['edit','Rediger'],['owner','Medeier']].forEach(([v,l]) => { %><option value="<%= v %>" <%= u.explicit === v ? 'selected' : '' %>><%= l %></option><% }) %>
+              </select><% } %></td>
+            <td><span class="badge"><%= LEVEL_LABELS[u.effective] %></span></td></tr>
+        <% }) %>
+      </table></div>
+      <div class="form-actions"><button>Lagre tilganger</button></div>
+    </form>
+    <form class="card" method="post" action="/dokumenter/<%= doc.id %>/eier">
+      <%- include('../partials/csrf') %>
+      <h2>Overfør eierskap</h2>
+      <select name="owner_id"><% users.filter(u => u.id !== doc.owner_id).forEach(u => { %><option value="<%= u.id %>"><%= u.name %></option><% }) %></select>
+      <p class="small muted">Du beholder redigeringstilgang.</p>
+      <div class="form-actions"><button class="secondary">Overfør</button></div>
+    </form>
+    <form class="card" method="post" action="/dokumenter/<%= doc.id %>/slett" data-confirm="Slette dokumentet og alle versjoner permanent?">
+      <%- include('../partials/csrf') %>
+      <h2>Slett</h2>
+      <button class="danger">Slett dokumentet</button>
+    </form>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/footer') %>

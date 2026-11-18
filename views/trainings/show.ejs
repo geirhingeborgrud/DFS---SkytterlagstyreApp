@@ -1,0 +1,27 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/treninger">Treninger</a></div>
+<h1><%= training.title %> <span class="muted small"><%= fmtDate(training.date) %> <%= training.start_time || '' %><%= training.end_time ? '–' + training.end_time : '' %></span></h1>
+<% if (canWrite) { %>
+<form class="card" method="post" action="/treninger/<%= training.id %>">
+  <%- include('../partials/csrf') %>
+  <label>Tittel</label><input name="title" type="text" value="<%= training.title %>">
+  <div class="row">
+    <div><label>Dato</label><input name="date" type="date" value="<%= training.date %>"></div>
+    <div><label>Fra</label><input name="start_time" type="time" value="<%= training.start_time || '' %>"></div>
+    <div><label>Til</label><input name="end_time" type="time" value="<%= training.end_time || '' %>"></div>
+  </div>
+  <label>Disiplin</label><select name="discipline"><option value="">–</option><% DISCIPLINES.forEach(d => { %><option <%= training.discipline === d ? 'selected' : '' %>><%= d %></option><% }) %></select>
+  <label>Sted</label><input name="location" type="text" value="<%= training.location || '' %>">
+  <label>Skyteleder</label><input name="leader" type="text" value="<%= training.leader || '' %>">
+  <label>Notater</label><textarea name="notes"><%= training.notes || '' %></textarea>
+  <div class="form-actions"><button>Lagre</button></div>
+</form>
+<form class="card" method="post" action="/treninger/<%= training.id %>/slett" data-confirm="Slette?">
+  <%- include('../partials/csrf') %>
+  <% if (seriesCount > 1) { %><label class="inline"><input type="checkbox" name="series" value="1"> Slett også de <%= seriesCount - 1 %> neste i serien</label><% } %>
+  <button class="danger small">Slett trening</button>
+</form>
+<% } else { %>
+<div class="card"><p><%= training.discipline || '' %><br>Sted: <%= training.location || '–' %><br>Skyteleder: <%= training.leader || '–' %></p><p class="pre"><%= training.notes || '' %></p></div>
+<% } %>
+<%- include('../partials/footer') %>

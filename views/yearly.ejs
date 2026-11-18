@@ -1,0 +1,47 @@
+<%- include('partials/header') %>
+<div class="page-head"><h1>Årsmelding og årsrapport <%= year %></h1>
+  <form method="get" action="/arsdokumenter"><select name="ar" data-autosubmit><% years.forEach(y => { %><option <%= y === year ? 'selected' : '' %>><%= y %></option><% }) %></select><noscript><button>Vis</button></noscript></form></div>
+
+<div class="stats">
+  <div class="card"><div class="stat"><%= stats.memberCount %></div>aktive medlemmer</div>
+  <div class="card"><div class="stat"><%= stats.boardMeetings.length %></div>gjennomførte styremøter</div>
+  <div class="card"><div class="stat"><%= stats.items.length %></div>styresaker</div>
+  <div class="card"><div class="stat"><%= stats.trainingCount %></div>treninger</div>
+  <div class="card"><div class="stat"><%= stats.competitions.length %></div>stevner</div>
+</div>
+<br>
+<div class="grid grid-2">
+  <div class="card">
+    <h2>Årsmelding <%= year %></h2>
+    <p class="small muted">Styrets beretning til årsmøtet. Egen mappe: Årsmeldinger / <%= year %>.</p>
+    <% if (canWrite) { %>
+    <form method="post" action="/arsdokumenter/<%= year %>/utkast"><%- include('partials/csrf') %><input type="hidden" name="type" value="melding">
+      <button>Lag utkast til hoveddokument</button></form>
+    <p class="small muted">Utkastet fylles med styret, medlemstall, møter og saker, treninger, stevner og ammunisjon for <%= year %>, med [plassholdere] for det styret må skrive selv. Lagres som RTF – åpnes og redigeres i Word. Lager du utkast på nytt, blir det en ny versjon.</p>
+    <% } %>
+    <h3>Dokumenter</h3>
+    <% if (!meldingDocs.length) { %><p class="empty">Ingen dokumenter ennå.</p><% } %>
+    <ul class="list"><% meldingDocs.forEach(d => { %><li><a href="/dokumenter/<%= d.id %>"><%= d.title %></a><span class="small"><%= fmtDate(d.updated_at) %></span></li><% }) %></ul>
+    <% if (canWrite && folderIds.melding) { %><a class="btn small secondary" href="/dokumenter/ny?mappe=<%= folderIds.melding %>&retur=/arsdokumenter?ar=<%= year %>">Last opp til mappen</a><% } %>
+  </div>
+  <div class="card">
+    <h2>Årsrapport <%= year %></h2>
+    <p class="small muted">Rapportering til krets/DFS (medlemstall, tillitsvalgte, aktivitet). Egen mappe: Årsrapport / <%= year %>.</p>
+    <% if (canWrite) { %>
+    <form method="post" action="/arsdokumenter/<%= year %>/utkast"><%- include('partials/csrf') %><input type="hidden" name="type" value="rapport">
+      <button>Lag utkast med nøkkeltall</button></form>
+    <% } %>
+    <h3>Dokumenter</h3>
+    <% if (!rapportDocs.length) { %><p class="empty">Ingen dokumenter ennå.</p><% } %>
+    <ul class="list"><% rapportDocs.forEach(d => { %><li><a href="/dokumenter/<%= d.id %>"><%= d.title %></a><span class="small"><%= fmtDate(d.updated_at) %></span></li><% }) %></ul>
+    <% if (canWrite && folderIds.rapport) { %><a class="btn small secondary" href="/dokumenter/ny?mappe=<%= folderIds.rapport %>&retur=/arsdokumenter?ar=<%= year %>">Last opp til mappen</a><% } %>
+  </div>
+</div>
+<div class="grid grid-2">
+  <div class="card"><h2>Medlemmer etter alder (31.12.<%= year %>)</h2>
+    <ul class="list"><li>Under 17 år<strong><%= stats.ages.under17 %></strong></li><li>17–20 år<strong><%= stats.ages['17-20'] %></strong></li><li>21–54 år<strong><%= stats.ages['21-54'] %></strong></li><li>55 år og eldre<strong><%= stats.ages['55+'] %></strong></li><% if (stats.ages.ukjent) { %><li>Ukjent fødselsdato<strong><%= stats.ages.ukjent %></strong></li><% } %></ul></div>
+  <div class="card"><h2>Ammunisjon <%= year %></h2>
+    <% if (!stats.ammo.length) { %><p class="empty">Ingen transaksjoner.</p><% } %>
+    <ul class="list"><% stats.ammo.forEach(a => { %><li><%= a.name %><span>kjøpt <%= a.bought || 0 %> · solgt <%= a.sold || 0 %></span></li><% }) %></ul></div>
+</div>
+<%- include('partials/footer') %>

@@ -1,0 +1,23 @@
+<%- include('../partials/header') %>
+<h1><%= title %></h1>
+<form class="card" method="post" action="<%= meeting.id ? base + '/' + meeting.id + '/rediger' : base + '/ny' %>">
+  <%- include('../partials/csrf') %>
+  <div class="row">
+    <div><label for="title">Tittel</label><input id="title" name="title" type="text" value="<%= meeting.title || '' %>" required></div>
+    <div><label for="starts_at">Starter</label><input id="starts_at" name="starts_at" type="datetime-local" value="<%= meeting.starts_at || '' %>" required></div>
+    <div><label for="ends_at">Slutter (valgfritt)</label><input id="ends_at" name="ends_at" type="datetime-local" value="<%= meeting.ends_at || '' %>"></div>
+  </div>
+  <div class="row">
+    <div><label for="location">Sted</label><input id="location" name="location" type="text" value="<%= meeting.location || '' %>" placeholder="f.eks. Klubbhuset"></div>
+    <div><label for="meet_url">Google Meet-lenke (valgfritt)</label><input id="meet_url" name="meet_url" type="url" value="<%= meeting.meet_url || '' %>" placeholder="https://meet.google.com/abc-defg-hij"></div>
+  </div>
+  <p class="small muted">Lag et Meet-rom på <a href="https://meet.google.com/new" target="_blank" rel="noopener">meet.google.com/new</a> og lim inn lenken – eller opprett møtet først og bruk «Legg i Google Kalender» for å invitere deltakerne med Meet automatisk.</p>
+  <% if (meeting.id) { %>
+  <label for="status">Status</label>
+  <select id="status" name="status"><% Object.entries(MEETING_STATUS).forEach(([k, v]) => { %><option value="<%= k %>" <%= meeting.status === k ? 'selected' : '' %>><%= v %></option><% }) %></select>
+  <% } %>
+  <label for="notes">Notater / tilstede / forfall</label>
+  <textarea id="notes" name="notes"><%= meeting.notes || '' %></textarea>
+  <div class="form-actions"><button>Lagre</button><a class="btn secondary" href="<%= meeting.id ? base + '/' + meeting.id : base %>">Avbryt</a></div>
+</form>
+<%- include('../partials/footer') %>

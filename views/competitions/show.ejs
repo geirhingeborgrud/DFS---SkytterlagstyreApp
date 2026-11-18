@@ -1,0 +1,36 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/stevner">Stevner</a></div>
+<div class="page-head"><h1><%= competition.name %></h1>
+  <div class="actions"><span class="badge"><%= fmtDate(competition.date) %><%= competition.end_date ? '–' + fmtDate(competition.end_date) : '' %></span><% if (competition.url) { %><a class="btn secondary" href="<%= competition.url %>" target="_blank" rel="noopener">Stevnets side</a><% } %></div></div>
+<div class="grid grid-2">
+  <div class="card" id="deltakere">
+    <h2>Deltakere fra laget (<%= participants.length %>)</h2>
+    <% if (!participants.length) { %><p class="empty">Ingen påmeldt.</p><% } %>
+    <div class="table-wrap"><table>
+      <% participants.forEach(p => { %>
+      <tr><td><a href="/medlemmer/<%= p.member_id %>"><%= p.first_name %> <%= p.last_name %></a><div class="small muted"><%= p.shooter_id || '' %></div></td>
+        <td><% if (canWrite) { %><form method="post" action="/stevner/<%= competition.id %>/deltakere/<%= p.member_id %>" class="actions"><%- include('../partials/csrf') %>
+          <input name="class" value="<%= p.class || p.member_class || '' %>" placeholder="Klasse" size="5"><input name="result" value="<%= p.result || '' %>" placeholder="Resultat">
+          <button class="small">Lagre</button><button class="link small danger" name="remove" value="1">Fjern</button></form>
+        <% } else { %><%= p.class || '' %> <%= p.result || '' %><% } %></td></tr>
+      <% }) %>
+    </table></div>
+    <% if (canWrite && members.length) { %>
+    <form method="post" action="/stevner/<%= competition.id %>/deltakere"><%- include('../partials/csrf') %>
+      <details><summary class="small">Legg til skyttere</summary>
+        <div class="check-list"><% members.forEach(m => { %><label><input type="checkbox" name="member_ids" value="<%= m.id %>"> <%= m.last_name %>, <%= m.first_name %></label><% }) %></div>
+        <div class="form-actions"><button class="small">Legg til</button></div></details>
+    </form>
+    <% } %>
+  </div>
+  <% if (canWrite) { %>
+  <div>
+    <form class="card" method="post" action="/stevner/<%= competition.id %>"><%- include('../partials/csrf') %><h2>Detaljer</h2>
+      <%- include('fields', { c: competition }) %><div class="form-actions"><button>Lagre</button></div></form>
+    <form class="card" method="post" action="/stevner/<%= competition.id %>/slett" data-confirm="Slette stevnet?"><%- include('../partials/csrf') %><button class="danger small">Slett stevne</button></form>
+  </div>
+  <% } else { %>
+  <div class="card"><p><%= competition.location || '' %><br><%= competition.organizer || '' %></p><p class="pre"><%= competition.notes || '' %></p></div>
+  <% } %>
+</div>
+<%- include('../partials/footer') %>

@@ -1,0 +1,74 @@
+<%- include('partials/header') %>
+<div class="welcome">
+  <% if (hasLogo) { %><img src="/logo?v=<%= logoVersion %>" alt="Logo"><% } %>
+  <div>
+    <h1><%= clubName %></h1>
+    <div class="muted">Hei <%= currentUser.name.split(' ')[0] %>! I dag er det <%= fmtDate(now) %>.</div>
+  </div>
+</div>
+
+<% if (overdue) { %><div class="flash warn"><%= overdue %> oppgave(r) har passert fristen. <a href="/oppgaver">Se oppgaver</a></div><% } %>
+<% lowAmmo.forEach(a => { %><div class="flash warn">Lav beholdning: <%= a.name %> (<%= a.stock %> <%= a.unit %>, minimum <%= a.min_stock %>). <a href="/vapen/ammo">Ammunisjon</a></div><% }) %>
+
+<div class="grid grid-dash">
+  <div>
+    <div class="card">
+      <div class="page-head"><h2><%= MONTHS[month - 1][0].toUpperCase() + MONTHS[month - 1].slice(1) %> <%= year %></h2><a class="btn secondary small" href="/kalender">Full kalender</a></div>
+      <%- include('partials/calendar-grid', { mini: true }) %>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <h2>Kommende</h2>
+        <% if (!upcoming.length) { %><p class="empty">Ingenting de neste 30 dagene.</p><% } %>
+        <ul class="list">
+        <% upcoming.forEach(e => { %>
+          <li><span><span class="badge"><%= fmtDate(e.date) %><%= e.time ? ' ' + e.time : '' %></span> <a href="<%= e.url %>"><%= e.title %></a></span>
+            <% if (e.meet) { %><a class="small" href="<%= e.meet %>" target="_blank" rel="noopener">Meet</a><% } %></li>
+        <% }) %>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Mine oppgaver</h2>
+        <% if (!myTasks.length) { %><p class="empty">Ingen åpne oppgaver.</p><% } %>
+        <ul class="list">
+        <% myTasks.forEach(t => { %>
+          <li><span><%= t.title %></span><span class="badge <%= t.due_date && t.due_date < now ? 'red' : '' %>"><%= t.due_date ? fmtDate(t.due_date) : '–' %></span></li>
+        <% }) %>
+        </ul>
+        <p class="small"><a href="/oppgaver?mine=1">Alle mine oppgaver</a></p>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Sist oppdaterte dokumenter</h2>
+      <%- include('partials/doc-table', { docs }) %>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Pålogget nå</h2>
+      <ul class="list">
+      <% online.forEach(u => { %><li><span><span class="dot online"></span><%= u.name %></span><span class="small muted"><%= u.id === currentUser.id ? 'deg' : '' %></span></li><% }) %>
+      </ul>
+      <p class="small muted">Aktive siste 5 minutter.</p>
+    </div>
+    <div class="card">
+      <div class="page-head"><h2>Styret</h2><a class="small" href="/styret">Alle</a></div>
+      <% if (!board.length) { %><p class="empty">Ingen verv registrert ennå. Sett verv på medlemmene under <a href="/medlemmer">Medlemmer</a>.</p><% } %>
+      <ul class="list">
+      <% board.forEach(m => { %>
+        <li><span><span class="dot <%= isOnline(m) ? 'online' : '' %>" title="<%= isOnline(m) ? 'Pålogget' : 'Ikke pålogget' %>"></span><strong><%= fullName(m) %></strong><br>
+          <span class="small muted"><%= m.roles.map(r => BOARD_ROLES[r]).join(', ') %></span></span>
+          <span class="small right"><% if (m.phone) { %><a href="tel:<%= m.phone %>"><%= m.phone %></a><br><% } %><% if (m.email) { %><a href="mailto:<%= m.email %>">e-post</a><% } %></span></li>
+      <% }) %>
+      </ul>
+    </div>
+    <div class="card">
+      <h2>Årshjul – <%= MONTHS[month - 1] %></h2>
+      <% if (!annual.length) { %><p class="empty">Ingen faste aktiviteter denne måneden.</p><% } %>
+      <ul class="list"><% annual.forEach(a => { %><li><span><%= a.title %><br><span class="small muted"><%= a.responsible || '' %></span></span></li><% }) %></ul>
+      <p class="small"><a href="/arshjul">Hele årshjulet</a></p>
+    </div>
+  </div>
+</div>
+<%- include('partials/footer') %>

@@ -1,0 +1,36 @@
+<%- include('../partials/header') %>
+<div class="crumbs"><a href="/medlemmer">Medlemmer</a></div>
+<div class="page-head">
+  <h1><%= fullName(member) %> <% if (!member.active) { %><span class="badge">inaktiv</span><% } %></h1>
+  <div class="actions"><% roles.forEach(r => { %><span class="badge navy"><%= BOARD_ROLES[r] %></span><% }) %>
+    <% if (linkedUser) { %><span class="badge"><span class="dot <%= isOnline(linkedUser) ? 'online' : '' %>"></span>Bruker: <%= ROLE_LABELS[linkedUser.role] %></span><% } %></div>
+</div>
+<div class="grid grid-dash">
+  <form class="card" method="post" action="/medlemmer/<%= member.id %>">
+    <%- include('../partials/csrf') %>
+    <%- include('fields', { member }) %>
+    <label class="inline"><input type="checkbox" name="active" value="1" <%= member.active ? 'checked' : '' %>> Aktivt medlem</label>
+    <% if (currentUser.role === 'admin') { %>
+    <fieldset><legend>Verv (et medlem kan ha flere)</legend>
+      <input type="hidden" name="roles_submitted" value="1">
+      <% Object.entries(BOARD_ROLES).forEach(([k, v]) => { %><label class="inline"><input type="checkbox" name="roles" value="<%= k %>" <%= roles.includes(k) ? 'checked' : '' %>> <%= v %></label><% }) %>
+    </fieldset>
+    <% } else { %><p class="small muted">Verv kan kun endres av administrator.</p><% } %>
+    <div class="form-actions"><button>Lagre</button></div>
+  </form>
+  <div>
+    <div class="card"><h2>Utlån</h2>
+      <% if (!loans.length) { %><p class="empty">Ingen.</p><% } %>
+      <ul class="list"><% loans.forEach(l => { %><li><a href="/vapen/utlan/<%= l.id %>"><%= [l.manufacturer, l.model].filter(Boolean).join(' ') %> <%= l.serial_number || '' %></a><span class="badge <%= l.status === 'aktiv' ? 'warn' : '' %>"><%= l.status %></span></li><% }) %></ul>
+    </div>
+    <div class="card"><h2>Ammunisjonskjøp</h2>
+      <% if (!purchases.length) { %><p class="empty">Ingen.</p><% } %>
+      <ul class="list"><% purchases.forEach(p => { %><li><span><%= fmtDate(p.date) %> · <%= p.quantity %> <%= p.unit %> <%= p.ammo_name %></span><span class="badge <%= p.paid ? 'ok' : 'warn' %>"><%= p.paid ? 'betalt' : 'ubetalt' %></span></li><% }) %></ul>
+    </div>
+    <div class="card"><h2>Stevner</h2>
+      <% if (!competitions.length) { %><p class="empty">Ingen.</p><% } %>
+      <ul class="list"><% competitions.forEach(c => { %><li><a href="/stevner/<%= c.id %>"><%= c.name %></a><span class="small"><%= fmtDate(c.date) %><%= c.result ? ' · ' + c.result : '' %></span></li><% }) %></ul>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

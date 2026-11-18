@@ -1,0 +1,17 @@
+<%# Forventer: docs %>
+<% if (!docs.length) { %><p class="empty">Ingen dokumenter.</p><% } else { %>
+<div class="table-wrap"><table>
+  <thead><tr><th>Dokument</th><th>Mappe</th><th>Eier</th><th>Din tilgang</th><th>Oppdatert</th></tr></thead>
+  <tbody>
+  <% docs.forEach(d => { %>
+    <tr>
+      <td><a href="/dokumenter/<%= d.id %>"><%= d.title %></a><% if (d.original_name) { %><div class="small muted"><%= d.original_name %> · <%= fileSize(d.size) %><%= d.version > 1 ? ' · v' + d.version : '' %></div><% } %></td>
+      <td class="small"><%= d.folder_name || '–' %></td>
+      <td class="small"><%= d.owner_name %></td>
+      <td><span class="badge <%= d.level === 'owner' ? 'navy' : '' %>"><%= LEVEL_LABELS[d.level] %></span></td>
+      <td class="small nowrap"><%= fmtDate(d.updated_at) %></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table></div>
+<% } %>

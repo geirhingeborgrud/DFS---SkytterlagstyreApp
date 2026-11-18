@@ -1,0 +1,25 @@
+<%# Forventer: weeks, month, now, mini (valgfri) %>
+<div class="table-wrap">
+<table class="cal<%= (typeof mini !== 'undefined' && mini) ? ' mini' : '' %>">
+  <thead><tr><% WEEKDAYS.forEach(d => { %><th><%= d %></th><% }) %></tr></thead>
+  <tbody>
+  <% weeks.forEach(week => { %>
+    <tr>
+    <% week.forEach(d => { %>
+      <td class="<%= d.inMonth ? '' : 'out' %> <%= d.date === now ? 'today' : '' %>">
+        <div class="day"><%= d.day %></div>
+        <% d.events.slice(0, (typeof mini !== 'undefined' && mini) ? 2 : 4).forEach(e => { %>
+          <a class="ev ev-<%= e.type %>" href="<%= e.url %>" title="<%= (e.time ? e.time + ' ' : '') + e.title %>"><%= e.time ? e.time + ' ' : '' %><%= e.title %></a>
+        <% }) %>
+        <% const max = (typeof mini !== 'undefined' && mini) ? 2 : 4; if (d.events.length > max) { %><span class="small muted">+<%= d.events.length - max %></span><% } %>
+      </td>
+    <% }) %>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<div class="legend">
+  <span class="lg-styremote">Styremøte</span><span class="lg-arsmote">Årsmøte</span>
+  <span class="lg-trening">Trening</span><span class="lg-stevne">Stevne</span><span class="lg-frist">Frist</span>
+</div>

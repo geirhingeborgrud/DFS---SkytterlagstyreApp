@@ -1,0 +1,46 @@
+<%- include('head') %>
+<body>
+<%
+  const nav = (href, label, exact) => {
+    const active = exact ? path === href : (path === href || path.startsWith(href + '/'));
+    return `<a href="${href}" class="${active ? 'active' : ''}">${label}</a>`;
+  };
+%>
+<div class="layout">
+  <aside class="sidebar no-print">
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" hidden>
+      <label for="nav-toggle" class="mobile-bar">
+        <span class="brand"><% if (hasLogo) { %><img src="/logo?v=<%= logoVersion %>" alt=""><% } %><span><%= clubName %></span></span>
+        <span class="burger" aria-label="Meny">☰</span>
+      </label>
+      <a class="brand desktop-brand" href="/"><% if (hasLogo) { %><img src="/logo?v=<%= logoVersion %>" alt="Logo"><% } %><span><%= clubName %></span></a>
+      <nav class="nav">
+        <%- nav('/', 'Oversikt', true) %>
+        <%- nav('/kalender', 'Kalender') %>
+        <div class="group">Styret</div>
+        <%- nav('/moter', 'Styremøter') %>
+        <%- nav('/arsmoter', 'Årsmøter') %>
+        <%- nav('/dokumenter', 'Dokumenter') %>
+        <%- nav('/oppgaver', 'Oppgaver') %>
+        <%- nav('/arshjul', 'Årshjul') %>
+        <%- nav('/arsdokumenter', 'Årsmelding og -rapport') %>
+        <%- nav('/stillinger', 'Stillingsinstrukser') %>
+        <% if (canWrite) { %><%- nav('/epost', 'E-post') %><% } %>
+        <div class="group">Laget</div>
+        <%- nav('/styret', 'Styret og tilganger') %>
+        <% if (canWrite) { %><%- nav('/medlemmer', 'Medlemmer') %><% } %>
+        <% if (canWrite) { %><%- nav('/vapen', 'Våpen og ammo') %><% } %>
+        <%- nav('/treninger', 'Treninger') %>
+        <%- nav('/stevner', 'Stevner') %>
+        <% if (currentUser && currentUser.role === 'admin') { %><div class="group">System</div><%- nav('/admin', 'Administrasjon') %><% } %>
+      </nav>
+      <% if (currentUser) { %>
+      <div class="me">
+        <span class="dot online"></span><a href="/profil"><%= currentUser.name %></a><br>
+        <span class="small"><%= ROLE_LABELS[currentUser.role] %><% if (currentUser.boardRoles && currentUser.boardRoles.length) { %> · <%= currentUser.boardRoles.map(r => BOARD_ROLES[r]).join(', ') %><% } %></span><br>
+        <form method="post" action="/logg-ut"><input type="hidden" name="_csrf" value="<%= csrfToken() %>"><button type="submit">Logg ut</button></form>
+      </div>
+      <% } %>
+  </aside>
+  <main>
+<%- include('flash') %>

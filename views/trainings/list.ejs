@@ -1,0 +1,33 @@
+<%- include('../partials/header') %>
+<div class="page-head"><h1>Treninger – <%= MONTHS[month - 1] %> <%= year %></h1>
+  <div class="actions">
+    <a class="btn secondary" href="/treninger?ar=<%= prev.ar %>&mnd=<%= prev.mnd %>">‹</a><a class="btn secondary" href="/treninger">I dag</a><a class="btn secondary" href="/treninger?ar=<%= next.ar %>&mnd=<%= next.mnd %>">›</a>
+  </div></div>
+<div class="grid grid-dash">
+  <div class="card"><%- include('../partials/calendar-grid') %></div>
+  <div>
+    <% if (canWrite) { %>
+    <form class="card" method="post" action="/treninger">
+      <%- include('../partials/csrf') %>
+      <h2>Ny trening</h2>
+      <label>Tittel</label><input name="title" type="text" value="Trening" required>
+      <div class="row">
+        <div><label>Dato</label><input name="date" type="date" value="<%= now %>" required></div>
+        <div><label>Fra</label><input name="start_time" type="time" value="18:00"></div>
+        <div><label>Til</label><input name="end_time" type="time" value="20:00"></div>
+      </div>
+      <label>Disiplin</label><select name="discipline"><option value="">–</option><% DISCIPLINES.forEach(d => { %><option><%= d %></option><% }) %></select>
+      <label>Sted</label><input name="location" type="text" placeholder="f.eks. Skytebanen">
+      <label>Skyteleder</label><input name="leader" type="text">
+      <label>Gjenta ukentlig (antall uker)</label><input name="repeat" type="number" min="1" max="52" value="1">
+      <label>Notater</label><textarea name="notes"></textarea>
+      <div class="form-actions"><button>Legg inn</button></div>
+    </form>
+    <% } %>
+    <div class="card"><h2>Kommende</h2>
+      <% if (!upcoming.length) { %><p class="empty">Ingen planlagte treninger.</p><% } %>
+      <ul class="list"><% upcoming.forEach(t => { %><li><span><a href="/treninger/<%= t.id %>"><%= t.title %></a><br><span class="small muted"><%= t.discipline || '' %><%= t.leader ? ' · ' + t.leader : '' %></span></span><span class="small nowrap"><%= fmtDate(t.date) %> <%= t.start_time || '' %></span></li><% }) %></ul>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>
